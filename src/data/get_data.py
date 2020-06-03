@@ -29,7 +29,7 @@ def load_mnist():
 
 def get_mnist() -> dict:
     filename = load_mnist()
-    with open(filename) as f:
+    with open(filename, 'rb') as f:
         mnist_data = pickle.load(f)
         
     return mnist_data
@@ -58,7 +58,7 @@ def load_cifar10():
             
 def get_cifar10() -> dict:
     filename = load_cifar10()
-    with open(filename) as f:
+    with open(filename, 'rb') as f:
         cifar10_data = pickle.load(f)
         
     return cifar10_data

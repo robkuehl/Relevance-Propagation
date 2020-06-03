@@ -8,9 +8,10 @@ from sklearn.model_selection import train_test_split
 
 def get_raw_data(dataset: str, class_nb: int) -> dict:
         filename = '{}_binary_data_class_{}.pickle'.format(dataset, class_nb)
+        filepath = os.path.join(os.path.dirname(__file__), '../../data/processed/{}'.format(filename)) 
         sample_size = 3
         
-        if not os.path.isfile(Path('../../data/processed/{}'.format(filename))):
+        if not os.path.isfile(Path(filepath)):
             data_dict = get_data.get_raw_data(dataset)
             images = data_dict['images']
             labels = data_dict['labels']
@@ -30,10 +31,10 @@ def get_raw_data(dataset: str, class_nb: int) -> dict:
             data_dict = {'images': images,
                          'labels': labels}
             
-            with open(Path('../../data/processed/{}'.format(filename)), 'wb') as f:
+            with open(Path(filepath), 'wb') as f:
                 pickle.dump(data_dict, f)
             
-        with open(Path('../../data/processed/{}'.format(filename))) as f:
+        with open(Path(filepath), 'rb') as f:
             data_dict = pickle.load(f)
         
         return data_dict
