@@ -43,8 +43,8 @@ def get_raw_data(dataset: str, class_nb: int) -> dict:
         return data_dict
     
 
-def get_training_data(dataset: str, test_size: float) -> np.ndarray:
-    data = get_raw_data(dataset)
+def get_training_data(dataset: str, class_nb: int, test_size: float) -> np.ndarray:
+    data = get_raw_data(dataset, class_nb)
     
     train_images, test_images, train_labels, test_labels = train_test_split(data['images'], data['labels'], test_size=test_size, random_state=42)
     
