@@ -1,12 +1,16 @@
 from tensorflow.keras.datasets import cifar10, mnist
-import json
+import pickle
 import os
 from pathlib import Path
 from sklearn.model_selection import train_test_split
 import numpy as np
 
 def load_mnist():
-    if not os.path.isfile(Path('../../data/raw/mnist.json')):
+    dirname = os.path.dirname(__file__)
+    print(dirname)
+    filename = os.path.join(dirname, '../../data/raw/mnist.pickle')
+    
+    if not os.path.isfile(Path(filename)):
         (train_images, train_labels), (test_images, test_labels) = mnist.load_data()
         
         images = np.asarray(list(test_images)+list(train_images))
@@ -15,23 +19,27 @@ def load_mnist():
         mnist_data = {'images':images,
                     'labels':labels,
                     }
-        with open('../../data/raw/mnist.json', 'w') as f:
-            json.dump(mnist_data, f)
+        with open(filename, 'wb') as f:
+            pickle.dump(mnist_data, f)
     else:
         pass
-            
+    
+    return filename
     
 
 def get_mnist() -> dict:
-    load_mnist()
-    with open('../../data/raw/mnist.json') as f:
-        mnist_data = json.load(f)
+    filename = load_mnist()
+    with open(filename) as f:
+        mnist_data = pickle.load(f)
         
     return mnist_data
     
 
 def load_cifar10():
-    if not os.path.isfile(Path('../../data/raw/cifar10.json')):
+    dirname = os.path.dirname(__file__)
+    filename = os.path.join(dirname, '../../data/raw/mnist.pickle')
+    
+    if not os.path.isfile(Path(filename)):
         (train_images, train_labels), (test_images, test_labels) = cifar10.load_data()
         
         images = np.asarray(list(test_images)+list(train_images))
@@ -41,15 +49,17 @@ def load_cifar10():
                         'labels':labels,
                     }
         
-        with open('../../data/raw/cifar10.json', 'w') as f:
-            json.dump(cifar10_data, f)
+        with open(filename, 'wb') as f:
+            pickle.dump(cifar10_data, f)
     else:
         pass
+    
+    return filename
             
 def get_cifar10() -> dict:
-    load_cifar10()
-    with open('../../data/raw/cifar10.json') as f:
-        cifar10_data = json.load(f)
+    filename = load_cifar10()
+    with open(filename) as f:
+        cifar10_data = pickle.load(f)
         
     return cifar10_data
     

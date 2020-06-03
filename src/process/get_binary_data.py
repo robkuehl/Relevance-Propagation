@@ -2,12 +2,12 @@ from data import get_data
 import os
 from pathlib import Path
 import random
-import json
+import pickle
 import numpy as np
 from sklearn.model_selection import train_test_split
 
 def get_raw_data(dataset: str, class_nb: int) -> dict:
-        filename = '{}_binary_data_class_{}.json'.format(dataset, class_nb)
+        filename = '{}_binary_data_class_{}.pickle'.format(dataset, class_nb)
         sample_size = 3
         
         if not os.path.isfile(Path('../../data/processed/{}'.format(filename))):
@@ -30,11 +30,11 @@ def get_raw_data(dataset: str, class_nb: int) -> dict:
             data_dict = {'images': images,
                          'labels': labels}
             
-            with open(Path('../../data/processed/{}'.format(filename)), 'w') as f:
-                json.dump(data_dict, f)
+            with open(Path('../../data/processed/{}'.format(filename)), 'wb') as f:
+                pickle.dump(data_dict, f)
             
         with open(Path('../../data/processed/{}'.format(filename))) as f:
-            data_dict = json.load(f)
+            data_dict = pickle.load(f)
         
         return data_dict
     
