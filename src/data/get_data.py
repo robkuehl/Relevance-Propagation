@@ -1,7 +1,9 @@
 from tensorflow.keras.datasets import cifar10, mnist
 import json
+import os
+from pathlib import Path
 
-def get_mnist():
+def get_mnist() -> dict:
     if not os.path.isfile(Path('../../data/raw/mnist.json')):
         (train_images, train_labels), (test_images, test_labels) = mnist.load_data()
         mnist_data = {'train_images':train_images,
@@ -18,7 +20,7 @@ def get_mnist():
         
     return mnist_data
 
-def get_cifar10():
+def get_cifar10() -> dict:
     if not os.path.isfile(Path('../../data/raw/cifar10.json')):
         (train_images, train_labels), (test_images, test_labels) = mnist.load_data()
         cifar10_data = {'train_images':train_images,
@@ -34,7 +36,7 @@ def get_cifar10():
         
     return cifar10_data
     
-def get_data(dataset: string) -> dict
+def get_data(dataset: str) -> dict:
     if dataset == 'mnist':
         return get_mnist()
     elif dataset == 'cifar10':
