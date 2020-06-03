@@ -1,4 +1,4 @@
-from ..data import get_data
+from data import get_data
 import os
 from pathlib import Path
 import random

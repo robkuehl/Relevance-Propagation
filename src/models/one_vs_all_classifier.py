@@ -1,5 +1,5 @@
-from .binary_classifier import binary_classifier
-from ..data import get_data
+from models.binary_classifier import binary_classifier
+from data import get_data
 
 
 class one_vs_all_classifier:

@@ -1,5 +1,5 @@
 import tensorflow as tf
-from ..process import get_binary_data
+from process import get_binary_data
 from tensorflow.keras.layers import Dense, Flatten, Conv2D, MaxPooling2D
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.optimizers import Adam

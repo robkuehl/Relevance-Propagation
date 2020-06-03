@@ -44,7 +44,7 @@ def calc_r(self, r: np.ndarray, output: np.ndarray, weights: np.ndarray, eps: in
     
 # Funktion für Relevance Propagation
 def rel_prop(self, model: tf.keras.Sequential, image: np.ndarray, eps: float = 0, beta: float = None) -> np.ndarray:
-    weights = self.get_weights(model)
+    weights = model.get_weights()
 
     # Hilfsmodel zum Extrahieren der Outputs des Hidden Layers
     extractor = tf.keras.Model(inputs=model.inputs,

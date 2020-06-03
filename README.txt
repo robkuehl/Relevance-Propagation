@@ -1,3 +1,6 @@
+To run the code:    - add the src folder to pythonpath
+                    - you may use the jupyter notebook 'main'
+
 Beschreibung der Projektstruktur:
 
 ├── README.md          <- The top-level README for developers using this project.
