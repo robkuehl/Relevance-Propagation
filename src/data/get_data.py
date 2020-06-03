@@ -42,7 +42,7 @@ def get_cifar10() -> dict:
         
     return cifar10_data
     
-def get_data(dataset: str) -> dict:
+def get_raw_data(dataset: str) -> dict:
     if dataset == 'mnist':
         return get_mnist()
     elif dataset == 'cifar10':
@@ -52,7 +52,7 @@ def get_data(dataset: str) -> dict:
     
 
 def get_training_data(dataset: str, test_size: float) -> np.ndarray:
-    data = get_data(dataset)
+    data = get_raw_data(dataset)
     
     train_images, test_images, train_labels, test_labels = train_test_split(data['images'], data['labels'], test_size=test_size, random_state=42)
     
