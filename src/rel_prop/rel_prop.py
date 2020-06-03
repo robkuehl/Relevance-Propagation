@@ -4,7 +4,7 @@ from tensorflow.keras.models import Sequential
 import sys
 
 
-def calc_r(self, r: np.ndarray, output: np.ndarray, weights: np.ndarray, eps: int = 0, beta: int = None):
+def calc_r(r: np.ndarray, output: np.ndarray, weights: np.ndarray, eps: int = 0, beta: int = None):
 
     nominator = np.multiply(np.transpose(output),
                             weights)
@@ -44,7 +44,7 @@ def calc_r(self, r: np.ndarray, output: np.ndarray, weights: np.ndarray, eps: in
     
     
 # Funktion für Relevance Propagation
-def rel_prop(self, model: tf.keras.Sequential, image: np.ndarray, eps: float = 0, beta: float = None) -> np.ndarray:
+def rel_prop(model: tf.keras.Sequential, image: np.ndarray, eps: float = 0, beta: float = None) -> np.ndarray:
     weights = model.get_weights()
 
     # Hilfsmodel zum Extrahieren der Outputs des Hidden Layers
@@ -56,21 +56,22 @@ def rel_prop(self, model: tf.keras.Sequential, image: np.ndarray, eps: float = 0
     outputs = [features[i] for i in range(len(list(features)))]
     
     r = []
-
-    for i in range(0,len(outputs),-1):
+    start_index = len(outputs)-1
+    for i in range(start_index, -1, -1):
+        print('Length of outputs-array: {} \n i: {}'.format(len(outputs), i))
 
         if i==len(outputs)-1:
             r_i = np.transpose(outputs[i])
             r.append(r_i)
         
         else:
-            r_i = self.calc_r(r=r[-1],
+            r_i = calc_r(r=r[-1],
                 output=outputs[i],
                 weights=weights[i],
                 eps=eps,
                 beta=beta)
             r.append(r_i)
 
-    relevance = np.reshape(r[0], image.shape)
+    relevance = np.reshape(r[-1], image.shape)
 
     return relevance
