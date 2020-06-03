@@ -5,7 +5,7 @@ from pathlib import Path
 from sklearn.model_selection import train_test_split
 import numpy as np
 
-def get_mnist() -> dict:
+def load_mnist():
     if not os.path.isfile(Path('../../data/raw/mnist.json')):
         (train_images, train_labels), (test_images, test_labels) = mnist.load_data()
         
@@ -17,13 +17,20 @@ def get_mnist() -> dict:
                     }
         with open('../../data/raw/mnist.json', 'w') as f:
             json.dump(mnist_data, f)
+    else:
+        pass
             
+    
+
+def get_mnist() -> dict:
+    load_mnist()
     with open('../../data/raw/mnist.json') as f:
         mnist_data = json.load(f)
         
     return mnist_data
+    
 
-def get_cifar10() -> dict:
+def load_cifar10():
     if not os.path.isfile(Path('../../data/raw/cifar10.json')):
         (train_images, train_labels), (test_images, test_labels) = cifar10.load_data()
         
@@ -36,11 +43,16 @@ def get_cifar10() -> dict:
         
         with open('../../data/raw/cifar10.json', 'w') as f:
             json.dump(cifar10_data, f)
+    else:
+        pass
             
+def get_cifar10() -> dict:
+    load_cifar10()
     with open('../../data/raw/cifar10.json') as f:
         cifar10_data = json.load(f)
         
     return cifar10_data
+    
     
 def get_raw_data(dataset: str) -> dict:
     if dataset == 'mnist':
