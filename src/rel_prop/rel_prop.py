@@ -1,3 +1,8 @@
+import tensorflow as tf
+import numpy as np
+from tensorflow.keras.models import Sequential
+
+
 def calc_r(self, r: np.ndarray, output: np.ndarray, weights: np.ndarray, eps: int = 0, beta: int = None):
 
     nominator = np.multiply(np.transpose(output),
@@ -51,9 +56,9 @@ def rel_prop(self, model: tf.keras.Sequential, image: np.ndarray, eps: float = 0
     
     r = []
 
-    for i in range(0,len(outputs),-1)
+    for i in range(0,len(outputs),-1):
 
-        if i=len(outputs)-1:
+        if i==len(outputs)-1:
             r_i = np.transpose(outputs[i])
             r.append(r_i)
         
