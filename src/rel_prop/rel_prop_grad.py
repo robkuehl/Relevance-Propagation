@@ -26,7 +26,7 @@ def calc_r(R: np.ndarray, prev_output: np.ndarray, layer, eps: int = 0, beta: in
     
 # Funktion für Relevance Propagation
 def rel_prop(model: tf.keras.Sequential, image: np.ndarray, eps: float = 0, beta: float = None) -> np.ndarray:
-    weights = model.get_weights()
+    layers = model.layers
 
     # Hilfsmodel zum Extrahieren der Outputs des Hidden Layers
     extractor = tf.keras.Model(inputs=model.inputs,
@@ -35,7 +35,7 @@ def rel_prop(model: tf.keras.Sequential, image: np.ndarray, eps: float = 0, beta
     outputs = extractor(np.array([image]))
 
     # Anzahl der Schichten
-    L = len(weights)
+    L = len(layers)
 
     # TODO: Nur den output für relevante Klasse benutzen
     output_const = tf.constant(outputs[-1])
@@ -43,7 +43,11 @@ def rel_prop(model: tf.keras.Sequential, image: np.ndarray, eps: float = 0, beta
 
     # TODO: Vielleicht z^B-Regel für letzte Schicht anwenden --> s. Tutorial
     for l in range(0,L)[::-1]:
-        R[l] = calc_r(R[l+1])
+        if isinstance(layers[l], tf.keras.layers.MaxPool2D):
+            layers[l] = tf.keras.layers.AvgPool2D(layers[l].pool_size)
+
+        # TODO: Indizes evtl. anpassen
+        R[l] = calc_r(R[l+1], outputs[l], layers[l])
 
     relevance = np.reshape(R[0], image.shape)
 
