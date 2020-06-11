@@ -5,20 +5,23 @@ import sys
 
 
 def calc_r(R: np.ndarray, prev_output: np.ndarray, layer, eps: int = 0, beta: int = None):
-
-    prev_output = tf.Variable(prev_output)
+    rho = lambda layer: layer.set_weights()
+    prev_output = tf.constant(prev_output)
     with tf.GradientTape() as gt:
         # forward pass / step 1
-        z = layer(prev_output)
+        gt.watch(prev_output)
+        z = layer(prev_output) + 0.5
         # step 2
-        s = tf.constant(tf.divide(R, z))
+        s = tf.divide(R, z)
+        s = tf.constant(s.numpy())
         # step 3.1
-        y = tf.reduce_sum(tf.tensordot(z,s))
+
+        y = tf.reduce_sum(z*s)
 
     # step 3.2
     c = gt.gradient(y, prev_output)
     # step 4
-    R_new = tf.constant(tf.tensordot(prev_output, c))
+    R_new = tf.constant(prev_output*c)
 
     return R_new
     
@@ -32,14 +35,16 @@ def rel_prop(model: tf.keras.Sequential, image: np.ndarray, eps: float = 0, beta
     extractor = tf.keras.Model(inputs=model.inputs,
                                outputs=[layer.output for layer in model.layers])
 
-    outputs = extractor(np.array([image]))
+    outputs =[image] + extractor(np.array([image]))
 
     # Anzahl der Schichten
     L = len(layers)
 
-    # TODO: Nur den output für relevante Klasse benutzen
     output_const = tf.constant(outputs[-1])
-    R = [None]*L + output_const
+    mask = np.array(output_const == np.max(output_const), dtype=np.dtype(int))
+
+    output_const = output_const * mask
+    R = [None]*L + [output_const]
 
     # TODO: Vielleicht z^B-Regel für letzte Schicht anwenden --> s. Tutorial
     for l in range(0,L)[::-1]:
