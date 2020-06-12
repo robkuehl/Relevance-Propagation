@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 from sklearn.model_selection import train_test_split
 import numpy as np
+from sklearn.preprocessing import OneHotEncoder
 
 def load_keras_data(dataset: str):
     dirname = os.path.dirname(__file__)
@@ -72,15 +73,23 @@ def get_classes(dataset: str):
     
     
 def get_raw_data(dataset: str) -> dict:
-    if dataset == 'mnist' or dataset == 'cifar10' or dataset == 'fasion_mnist':
+    if dataset == 'mnist' or dataset == 'cifar10' or dataset == 'fashion_mnist':
         return get_keras_data(dataset)
     else:
         raise ValueError('Desired dataset is not available. Please choose mnist or cifar10')
     
 
-def get_training_data(dataset: str, test_size: float) -> np.ndarray:
+def get_training_data(dataset: str, test_size: float, encoded: bool) -> np.ndarray:
     data = get_raw_data(dataset)
     
     train_images, test_images, train_labels, test_labels = train_test_split(data['images'], data['labels'], test_size=test_size, random_state=42)
+    
+    if encoded == True:
+        if dataset == fashion_mnist:
+            train_images=train_images.reshape(-1,1)
+            test_images=train_images.reshape(-1,1)
+        onehot_encoder = OneHotEncoder(sparse=False)
+        train_labels = onehot_encoder.fit_transform(train_labels)
+        test_labels = onehot_encoder.fit_transform(test_labels)
     
     return train_images, test_images, train_labels, test_labels
