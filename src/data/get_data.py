@@ -13,9 +13,9 @@ def load_keras_data(dataset: str):
     if not os.path.isfile(Path(filename)):
         if dataset == "mnist":
             (train_images, train_labels), (test_images, test_labels) = mnist.load_data()
-        elif dataset == "cifar10"
+        elif dataset == "cifar10":
             (train_images, train_labels), (test_images, test_labels) = cifar10.load_data()
-        elif dataset == "fashion_mnist"
+        elif dataset == "fashion_mnist":
             (train_images, train_labels), (test_images, test_labels) = fashion_mnist.load_data()
         
         images = np.asarray(list(test_images)+list(train_images))
@@ -39,7 +39,36 @@ def get_keras_data(dataset) -> dict:
         
     return data
 
+def get_classes(dataset: str):
+    if dataset == 'cifar10':
+        classes = { 0 : 'airplane',
+                    1 : 'automobile',
+                    2 : 'bird',
+                    3 : 'cat',
+                    4 : 'deer',
+                    5 : 'dog',
+                    6 : 'frog',
+                    7 : 'horse',
+                    8 : 'ship',
+                    9 : 'truck'
+                }
+    elif dataset == 'fashion_mnsit':
+        classes = {
+                    0 : 'T-Shirt',
+                    1 : 'Trouser',
+                    2 : 'Pullover',
+                    3 : 'Dress',
+                    4 : 'Coat',
+                    5 : 'Sandal',
+                    6 : 'Shirt',
+                    7 : 'Sneaker',
+                    8 : 'Bag',
+                    9 : 'Ankle boot'
+                }
+    elif dataset == 'mnist':
+        classes = [i for i in range(10)]
 
+    return classes
     
     
 def get_raw_data(dataset: str) -> dict:
