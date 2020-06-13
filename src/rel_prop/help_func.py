@@ -1,6 +1,7 @@
 import tensorflow.keras as keras
 import tensorflow as tf
 import numpy as np
+import time
 import matplotlib.pyplot as plt
 from matplotlib import colors
 from src.rel_prop.rel_prop_grad import *
@@ -28,7 +29,7 @@ class MidpointNormalize(colors.Normalize):
         return np.ma.masked_array(np.interp(value, x, y), np.isnan(value))
 
 
-def pred(model, idx, dataset: str):
+def pred(model, idx, dataset: str, eps: float, gamma: float):
     if dataset is 'train':
         data_x = x_train
         data_y = y_train
@@ -43,17 +44,24 @@ def pred(model, idx, dataset: str):
         print('{}:\t\t {:.2f}'.format(classes[i], prediction[0][i]))
     print('\nNetwork Decision: {}'.format(classes[np.argmax(prediction)]))
 
+    timestamp = time.strftime('%d-%m_%Hh%m')
+    persist_string = f'{dataset}_{idx}_{timestamp}'
+    config_string = f'filename: {dataset}_{idx}\neps: {eps}   gamma: {gamma}'
+
     img = np.array([data_x[idx].astype(float)])
     mask = np.zeros(10, dtype=np.dtype(float))
     mask[data_y[idx]] = 1.
     mask = tf.constant(mask, dtype=tf.float32)
-    relevance = rel_prop(model, img, mask)
+    relevance = rel_prop(model, img, mask, eps=eps, gamma=gamma)
     relevance = relevance.sum(axis=3)
-    plt.subplot(2, 1, 1)
+    plt.suptitle(config_string)
+    plt.subplot(1, 2, 1)
+    plt.imshow(data_x[idx])
+    plt.subplot(1, 2, 2)
     plt.imshow(relevance[0], cmap='seismic',
                norm=MidpointNormalize(midpoint=0, vmin=relevance[0].min(), vmax=relevance[0].max()))
-    plt.subplot(2, 1, 2)
-    plt.imshow(data_x[idx])
+
+    plt.savefig('figures/' + persist_string)
     plt.show()
 
 

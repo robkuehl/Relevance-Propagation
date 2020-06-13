@@ -7,10 +7,11 @@ os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
 # model = keras.models.load_model('pretrained_models/cifar10_model_3_multiclass_12_06_2020-23.h5')
 model = keras.models.load_model('pretrained_models/cnn_model3_soft.h5')
+# model = keras.models.load_model('pretrained_models/cnn_model3.h5')
 model.summary()
 
-idx = 234
+idx = 9210
 
-pred(model, idx, 'test')
+pred(model, idx, 'test', eps=0.001, gamma=0.5)
 
 

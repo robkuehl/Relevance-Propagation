@@ -15,16 +15,16 @@ def rho(layer, c: int):
         print('Failed')
     return layer
 
-def calc_r(R: np.ndarray, prev_output: np.ndarray, layer, eps: int = 0, beta: int = None):
+def calc_r(R: np.ndarray, prev_output: np.ndarray, layer, eps: float, gamma: float):
 
     prev_output = tf.constant(prev_output)
     if isinstance(layer, tf.keras.layers.Conv2D) or isinstance(layer, tf.keras.layers.Dense):
-        layer = rho(layer, 0.25)
+        layer = rho(layer, gamma)
     with tf.GradientTape() as gt:
         # forward pass / step 1
         gt.watch(prev_output)
         z = layer(prev_output)
-        z = z + tf.constant(0.25 * tf.reduce_mean(z**2)**.5)
+        z = z + eps #tf.constant(0.25 * tf.reduce_mean(z**2)**.5)
         # step 2
         s = tf.divide(R, z)
 
@@ -48,7 +48,7 @@ def calc_r(R: np.ndarray, prev_output: np.ndarray, layer, eps: int = 0, beta: in
     
 
 # Funktion für Relevance Propagation
-def rel_prop(model: tf.keras.Sequential, image: np.ndarray, mask: np.ndarray, eps: float = 0, beta: float = None) -> np.ndarray:
+def rel_prop(model: tf.keras.Sequential, image: np.ndarray, mask: np.ndarray, eps: float = 0, gamma: float = 0) -> np.ndarray:
     layers = model.layers
 
     # Hilfsmodel zum Extrahieren der Outputs des Hidden Layers
@@ -62,11 +62,7 @@ def rel_prop(model: tf.keras.Sequential, image: np.ndarray, mask: np.ndarray, ep
 
     # TODO: Mask durch korrektes Label definieren
     output_const = tf.constant(outputs[-1])
-    # mask = np.array(output_const == np.max(output_const), dtype=np.dtype(int))
-    print(output_const)
-    # output_const = tf.tensordot(output_const,tf.transpose(mask), axes=1)
     output_const = output_const * mask
-    print(output_const)
     R = [None]*L + [output_const]
 
     # TODO: Vielleicht z^B-Regel für letzte Schicht anwenden --> s. Tutorial
@@ -78,8 +74,7 @@ def rel_prop(model: tf.keras.Sequential, image: np.ndarray, mask: np.ndarray, ep
             layer = tf.keras.layers.AvgPool2D(layers[l].pool_size)
         # R[l] = calc_r(R[l + 1], outputs[l], layers[l])
         if isinstance(layer, (tf.keras.layers.Conv2D, tf.keras.layers.Dense, tf.keras.layers.AvgPool2D, tf.keras.layers.Flatten)):
-            print(layer)
-            R[l] = calc_r(R_old, output, layer)
+            R[l] = calc_r(R_old, output, layer, eps, gamma)
         else:
             R[l] = R_old
 
