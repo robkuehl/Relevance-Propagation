@@ -28,23 +28,32 @@ class MidpointNormalize(colors.Normalize):
         return np.ma.masked_array(np.interp(value, x, y), np.isnan(value))
 
 
-def pred(model, idx):
-    prediction = model.predict(np.array([x_test[idx]], dtype=np.dtype(float)))
+def pred(model, idx, dataset: str):
+    if dataset is 'train':
+        data_x = x_train
+        data_y = y_train
+    else:
+        data_x = x_test
+        data_y = y_test
 
-    print('Correct Label: {}\n'.format(classes[y_test[idx][0]]))
+    prediction = model.predict(np.array([data_x[idx]], dtype=np.dtype(float)))
+
+    print('Correct Label: {}\n'.format(classes[data_y[idx][0]]))
     for i in range(10):
         print('{}:\t\t {:.2f}'.format(classes[i], prediction[0][i]))
     print('\nNetwork Decision: {}'.format(classes[np.argmax(prediction)]))
 
-    img = np.array([x_test[idx].astype(float)])
-
-    relevance = rel_prop(model, img)
+    img = np.array([data_x[idx].astype(float)])
+    mask = np.zeros(10, dtype=np.dtype(float))
+    mask[data_y[idx]] = 1.
+    mask = tf.constant(mask, dtype=tf.float32)
+    relevance = rel_prop(model, img, mask)
     relevance = relevance.sum(axis=3)
     plt.subplot(2, 1, 1)
     plt.imshow(relevance[0], cmap='seismic',
                norm=MidpointNormalize(midpoint=0, vmin=relevance[0].min(), vmax=relevance[0].max()))
     plt.subplot(2, 1, 2)
-    plt.imshow(x_test[idx])
+    plt.imshow(data_x[idx])
     plt.show()
 
 

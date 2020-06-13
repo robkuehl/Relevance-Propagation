@@ -6,10 +6,11 @@ import sys
 
 def rho(layer, c: int):
     try:
-        layer.set_weights([tf.clip_by_value(np.multiply(layer.get_weights(), c)[0],
-                                            clip_value_min=0, clip_value_max=np.inf),
-                           tf.clip_by_value(np.multiply(layer.get_weights(), c)[1],
-                                            clip_value_min=0, clip_value_max=np.inf)])
+        weights = layer.get_weights()
+        layer.set_weights([tf.add(weights[0],tf.clip_by_value(np.multiply(layer.get_weights(), c)[0],
+                                            clip_value_min=0, clip_value_max=np.inf)),
+                           tf.add(weights[1],tf.clip_by_value(np.multiply(layer.get_weights(), c)[1],
+                                            clip_value_min=0, clip_value_max=np.inf))])
     except IndexError:
         print('Failed')
     return layer
@@ -22,10 +23,18 @@ def calc_r(R: np.ndarray, prev_output: np.ndarray, layer, eps: int = 0, beta: in
     with tf.GradientTape() as gt:
         # forward pass / step 1
         gt.watch(prev_output)
-        z = layer(prev_output) + 0.5
+        z = layer(prev_output)
+        z = z + tf.constant(0.25 * tf.reduce_mean(z**2)**.5)
         # step 2
         s = tf.divide(R, z)
-        s = tf.constant(s.numpy())
+
+        # falls LRP-0 verwendet wird, werden NaNs durch 0 ersetzt
+        # das ist erlaubt, da z und R an den gleichen Stellen 0 sind
+        # wir definieren also 0/0 = 0, statt NaN
+        s = s.numpy()
+        s[np.isnan(s)] = 0
+        s = tf.constant(s)
+
         # step 3.1
 
         y = tf.reduce_sum(z*s)
@@ -39,7 +48,7 @@ def calc_r(R: np.ndarray, prev_output: np.ndarray, layer, eps: int = 0, beta: in
     
 
 # Funktion für Relevance Propagation
-def rel_prop(model: tf.keras.Sequential, image: np.ndarray, eps: float = 0, beta: float = None) -> np.ndarray:
+def rel_prop(model: tf.keras.Sequential, image: np.ndarray, mask: np.ndarray, eps: float = 0, beta: float = None) -> np.ndarray:
     layers = model.layers
 
     # Hilfsmodel zum Extrahieren der Outputs des Hidden Layers
@@ -53,9 +62,11 @@ def rel_prop(model: tf.keras.Sequential, image: np.ndarray, eps: float = 0, beta
 
     # TODO: Mask durch korrektes Label definieren
     output_const = tf.constant(outputs[-1])
-    mask = np.array(output_const == np.max(output_const), dtype=np.dtype(int))
-
+    # mask = np.array(output_const == np.max(output_const), dtype=np.dtype(int))
+    print(output_const)
+    # output_const = tf.tensordot(output_const,tf.transpose(mask), axes=1)
     output_const = output_const * mask
+    print(output_const)
     R = [None]*L + [output_const]
 
     # TODO: Vielleicht z^B-Regel für letzte Schicht anwenden --> s. Tutorial

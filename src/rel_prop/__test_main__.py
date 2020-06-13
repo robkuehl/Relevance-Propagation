@@ -5,11 +5,12 @@ import os
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
 
-model = keras.models.load_model('pretrained_models/LeNet5_cifar.h5')
+model = keras.models.load_model('pretrained_models/cifar10_model_3_multiclass_12_06_2020-23.h5')
+# model = keras.models.load_model('pretrained_models/LeNet5_cifar.h5')
 model.summary()
 
-idx = 190
+idx = 234
 
-pred(model, idx)
+pred(model, idx, 'test')
 
 
