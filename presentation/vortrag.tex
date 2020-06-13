@@ -9,14 +9,8 @@
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{amssymb}
-\usepackage{algorithm}
-\usepackage{algpseudocode}
-\usepackage{tikz}
 \usepackage{hyperref}
-%\usepackage{tkz-graph}
 \usepackage{xcolor}
-\usetikzlibrary{arrows}
-\usetikzlibrary{petri}
 \usepackage{caption}
 %\usepackage{natbib}
 \usepackage{verbatim}
@@ -99,22 +93,6 @@ abstract = "Nonlinear methods such as Deep Neural Networks (DNNs) are the gold s
 \end{filecontents}
 
 
-\algnewcommand{\Inputs}[1]{%
-  \State \textbf{Eingabe:}
-  \Statex \hspace*{\algorithmicindent}\parbox[t]{.8\linewidth}{\raggedright #1}
-}
-
-\algnewcommand{\Outputs}[1]{%
-  \State \textbf{Ausgabe:}
-  \Statex \hspace*{\algorithmicindent}\parbox[t]{.8\linewidth}{\raggedright #1}
-}
-
-\algnewcommand{\Initialize}[1]{%
-  \State \textbf{Initialisierung:}
-  \Statex \hspace*{\algorithmicindent}\parbox[t]{.8\linewidth}{\raggedright #1}
-}
-\floatname{algorithm}{Algorithmus}
-
 
 %Eigene Befehle:
 
@@ -149,12 +127,22 @@ abstract = "Nonlinear methods such as Deep Neural Networks (DNNs) are the gold s
 
 \include{content}
 
+\include{content_einleitung}
+
+\include{content_cnn}
+
+\include{content_lrp}
+
+\include{content_bsp}
+
+\include{content_deep_taylor}
+
 \begin{frame}{Zitate:}
 Zitat: \cite{binder} \\
 Weiteres: \cite{montavon}
 \end{frame}
 
-\section{Literatur}
+%\section{Literatur}
 
 \begin{frame}{Literaturliste}
 \color{unikoelndarkgray}
