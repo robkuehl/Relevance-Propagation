@@ -4,9 +4,21 @@ from tensorflow.keras.models import Sequential
 import sys
 
 
+def rho(layer, c: int):
+    try:
+        layer.set_weights([tf.clip_by_value(np.multiply(layer.get_weights(), c)[0],
+                                            clip_value_min=0, clip_value_max=np.inf),
+                           tf.clip_by_value(np.multiply(layer.get_weights(), c)[1],
+                                            clip_value_min=0, clip_value_max=np.inf)])
+    except IndexError:
+        print('Failed')
+    return layer
+
 def calc_r(R: np.ndarray, prev_output: np.ndarray, layer, eps: int = 0, beta: int = None):
-    rho = lambda layer: layer.set_weights()
+
     prev_output = tf.constant(prev_output)
+    if isinstance(layer, tf.keras.layers.Conv2D) or isinstance(layer, tf.keras.layers.Dense):
+        layer = rho(layer, 0.25)
     with tf.GradientTape() as gt:
         # forward pass / step 1
         gt.watch(prev_output)
@@ -25,8 +37,7 @@ def calc_r(R: np.ndarray, prev_output: np.ndarray, layer, eps: int = 0, beta: in
 
     return R_new
     
-    
-    
+
 # Funktion für Relevance Propagation
 def rel_prop(model: tf.keras.Sequential, image: np.ndarray, eps: float = 0, beta: float = None) -> np.ndarray:
     layers = model.layers
@@ -40,6 +51,7 @@ def rel_prop(model: tf.keras.Sequential, image: np.ndarray, eps: float = 0, beta
     # Anzahl der Schichten
     L = len(layers)
 
+    # TODO: Mask durch korrektes Label definieren
     output_const = tf.constant(outputs[-1])
     mask = np.array(output_const == np.max(output_const), dtype=np.dtype(int))
 
