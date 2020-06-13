@@ -9,14 +9,8 @@
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{amssymb}
-\usepackage{algorithm}
-\usepackage{algpseudocode}
-\usepackage{tikz}
 \usepackage{hyperref}
-%\usepackage{tkz-graph}
 \usepackage{xcolor}
-\usetikzlibrary{arrows}
-\usetikzlibrary{petri}
 \usepackage{caption}
 %\usepackage{natbib}
 \usepackage{verbatim}
@@ -99,22 +93,6 @@ abstract = "Nonlinear methods such as Deep Neural Networks (DNNs) are the gold s
 \end{filecontents}
 
 
-\algnewcommand{\Inputs}[1]{%
-  \State \textbf{Eingabe:}
-  \Statex \hspace*{\algorithmicindent}\parbox[t]{.8\linewidth}{\raggedright #1}
-}
-
-\algnewcommand{\Outputs}[1]{%
-  \State \textbf{Ausgabe:}
-  \Statex \hspace*{\algorithmicindent}\parbox[t]{.8\linewidth}{\raggedright #1}
-}
-
-\algnewcommand{\Initialize}[1]{%
-  \State \textbf{Initialisierung:}
-  \Statex \hspace*{\algorithmicindent}\parbox[t]{.8\linewidth}{\raggedright #1}
-}
-\floatname{algorithm}{Algorithmus}
-
 
 %Eigene Befehle:
 
@@ -138,35 +116,36 @@ abstract = "Nonlinear methods such as Deep Neural Networks (DNNs) are the gold s
 % Der eigentliche Vortrag  
 \begin{document}
 
+%\include{content_lrp}
+\section{Implementierung LRP}
+\frame{\frametitle{LRP für CNNs}
+\begin{itemize}
+\item Basisformel
+\begin{align*}
+R_{i}^{(l)}=\sum_{j} \frac{z_{i j}}{\sum_{i^{\prime}} z_{i^{\prime} j}} R_{j}^{(l+1)} \quad \text { mit } \quad \mathrm{z}_{\mathrm{ij}}=\mathrm{x}_{\mathrm{i}}^{(1)} \mathrm{w}_{\mathrm{ij}}^{(l,l+1)}
+\end{align*}
 
-\begin{frame}
-	\titlepage
-\end{frame}
+\item Problematisch bei komplexeren Layern (\textit{Beispiel: ConvLayer})
+\item Betrachte alternative Implementierung
 
-\begin{frame}{Überblick}
-  \tableofcontents[hideallsubsections]
-\end{frame}
+\end{itemize}
+}
 
-\include{content}
+\frame{\frametitle{LRP für CNNs}
+\begin{itemize}
+\item Basisformel
+\begin{align*}
+\begin{array}{ll}
+\forall_{k}: z_{k}=\epsilon+\sum_{0, j} a_{j} \cdot \rho\left(w_{j k}\right) & \text { (forward pass) } \\
+\forall_{k}: s_{k}=R_{k} / z_{k} & \text { (element-wise division) } \\
+\forall_{j}: c_{j}=\sum_{k} \rho\left(w_{j k}\right) \cdot s_{k} & \text { (backward pass) } \\
+\forall_{j}: R_{j}=a_{j} c_{j} & \text { (element-wise product) }
+\end{array}
+\end{align*}
 
-\begin{frame}{Zitate:}
-Zitat: \cite{binder} \\
-Weiteres: \cite{montavon}
-\end{frame}
+\item Problematisch bei komplexeren Layern (\textit{Beispiel: ConvLayer})
+\item Betrachte alternative Implementierung
 
-\section{Literatur}
-
-\begin{frame}{Literaturliste}
-\color{unikoelndarkgray}
-%\bibliographystyle{abbrvnat}
-\bibliography{meinebib}
-\bibliographystyle{plain}
-
-%\bibitem{Test}
-%\bibentry{Test2}
-
-
-\end{frame}
-
-
+\end{itemize}
+}
 \end{document}

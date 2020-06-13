@@ -1,0 +1,39 @@
+\section{Deep Taylor Decomposition} 
+\frame{\frametitle{Taylor Decomposition f\"ur Neuronale Netze}
+\begin{itemize}
+\item Problem bei der LRP bisher: Die Formeln machen Sinn und funktionieren, aber die theoretische Fundierung fehlt.
+\item Mit theoretischer Fundierung sind evlt. allgemeinere Aussagen möglich.
+\item Betrachte hierzu ein NN als Funktion $f: \rn^{p} \rightarrow \rn$, wobei $p$ die Inputgr\"osse bezeichnet. 
+\item Nehme an, dass $f(x)> 0$ Evidenz f\"ur das gesuchte Objekt bedeutet.
+\item Intuition: Verschiebe den Input, sodass $f(x)=0$. Dimensionen, in die "{}weiter"{} verschoben wurde, haben offensichtlich mehr zur Klassifizierung beigetragen.
+\end{itemize}
+}
+\frame{\frametitle{Taylor Decomposition}
+\begin{itemize}
+\item Ansatz: Betrachte Taylor-Entwicklung von $f$. 
+\item W\"ahle als Entwicklungspunkt $\hat{x}$ eine Nullstelle von $f$. 
+\item Taylorentwicklung ist gegeben durch
+\begin{align*}
+f(\boldsymbol{x}) &= f(\hat{\boldsymbol{x}})+\left(\left.\frac{\partial f}{\partial \boldsymbol{x}}\right|_{\boldsymbol{x}=\hat{\boldsymbol{x}}}\right)^{\top} \cdot(\boldsymbol{x}-\hat{\boldsymbol{x}})+\varepsilon \\ 
+&= 0+\sum_{p} \underbrace{\left|\frac{\partial f}{\partial x_{p}}\right|_{x=\hat{x}} \cdot\left(x_{p}-\hat{x}_{p}\right)}_{R_{p}(x)}+\varepsilon
+\end{align*}
+\item $R_p (x)$ stellt somit die Relevanz der $p-$ten Komponente des Inputs dar.
+\item Genauigkeit h\"angt davon ab, ob Terme h\"oherer Ordnung vernachl\"assigt werden k\"onnen.
+\end{itemize}
+}
+
+\frame{\frametitle{Taylor Decomposition}
+\begin{itemize}
+\item Problem: Wahl eines geeigneten Punkts $\hat{x}$ für das ganze Netzwerk.
+\item Oft zu weit entfernt und gibt somit nicht so viele Informationen zur Entscheidungsfindung des Netzwerks.
+\item Gradient Shattering (-> Montavon Vortrag, nochmal genauer nachschauen)
+\item Abhilfe: Führe die Taylor Decomposition an jedem einzelnen Neuron mit einem eigenen Punkt $\hat{x}^{(j)}$ durch. 
+\item Konzept der \textbf{Deep Taylor Decomposition} 
+\end{itemize}
+}
+
+\frame{\frametitle{Deep Taylor Decomposition}
+\begin{itemize}
+\item Deep Taylor erklären
+\end{itemize}
+}

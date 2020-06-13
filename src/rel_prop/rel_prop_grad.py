@@ -24,7 +24,7 @@ def calc_r(R: np.ndarray, prev_output: np.ndarray, layer, eps: int = 0, beta: in
         # forward pass / step 1
         gt.watch(prev_output)
         z = layer(prev_output)
-        z = z + tf.constant(0.25 * tf.reduce_mean(z**2)**.5)
+        z = z + 1e-09 #tf.constant(0.25 * tf.reduce_mean(z**2)**.5)
         # step 2
         s = tf.divide(R, z)
 
@@ -74,8 +74,11 @@ def rel_prop(model: tf.keras.Sequential, image: np.ndarray, mask: np.ndarray, ep
         if isinstance(layers[l], tf.keras.layers.MaxPool2D):
             layers[l] = tf.keras.layers.AvgPool2D(layers[l].pool_size)
 
-        # TODO: Indizes evtl. anpassen
-        R[l] = calc_r(R[l+1], outputs[l], layers[l])
+        if isinstance(layers[l], (tf.keras.layers.Conv2D, tf.keras.layers.Dense, tf.keras.layers.AvgPool2D, tf.keras.layers.Flatten)):
+            print(layers[l])
+            R[l] = calc_r(R[l+1], outputs[l], layers[l])
+        else:
+            R[l] = R[l+1]
 
     relevance = np.reshape(R[0], image.shape)
 

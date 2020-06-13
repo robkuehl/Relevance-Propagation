@@ -1,8 +1,3 @@
 \beamer@endinputifotherversion {3.36pt}
 \select@language {ngerman}
-\beamer@sectionintoc {1}{R\"uckblick}{3}{0}{1}
-\beamer@sectionintoc {2}{Einf\"uhrung - Convolutional Neural Networks}{5}{0}{2}
-\beamer@sectionintoc {3}{Implementierung eines Netzes zur Bilderkennung}{7}{0}{3}
-\beamer@sectionintoc {4}{Implementierung LRP f\"ur CNNs}{8}{0}{4}
-\beamer@sectionintoc {5}{Konzept - Deep Taylor Decomposition}{9}{0}{5}
-\beamer@sectionintoc {6}{Literatur}{14}{0}{6}
+\beamer@sectionintoc {1}{Implementierung LRP}{1}{0}{1}
