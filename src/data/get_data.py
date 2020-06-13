@@ -88,10 +88,10 @@ def get_mnist():
 
     
 def get_cifar10(encoded:bool, training:bool, test_size=0.2):
-    filename = os.path.join(dirname, '../../data/raw/get_cifar10.pickle')
+    filename = os.path.join(dirname, '../../data/raw/cifar10.pickle')
     if not os.path.isfile(Path(filename)):
         (train_images, train_labels), (test_images, test_labels) = cifar10.load_data()
-        images = np.asarray(list(test_images)+list(train_images))
+        images = np.asarray(list(test_images)+list(train_images))/255.0
         labels = np.asarray(list(test_labels)+list(train_labels))
         
         data = {'images':images,
