@@ -5,12 +5,9 @@ import os
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
 
-model = keras.models.load_model('pretrained_models/cifar10_model_3_multiclass_12_06_2020-23.h5')
-# model = keras.models.load_model('pretrained_models/cnn_model3.h5')
+# model = keras.models.load_model('pretrained_models/cifar10_model_3_multiclass_12_06_2020-23.h5')
+model = keras.models.load_model('pretrained_models/cnn_model3_soft.h5')
 model.summary()
-
-for layer in model.layers:
-    print(layer)
 
 idx = 234
 

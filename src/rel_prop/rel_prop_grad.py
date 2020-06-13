@@ -24,7 +24,7 @@ def calc_r(R: np.ndarray, prev_output: np.ndarray, layer, eps: int = 0, beta: in
         # forward pass / step 1
         gt.watch(prev_output)
         z = layer(prev_output)
-        z = z + 1e-09 #tf.constant(0.25 * tf.reduce_mean(z**2)**.5)
+        z = z + tf.constant(0.25 * tf.reduce_mean(z**2)**.5)
         # step 2
         s = tf.divide(R, z)
 
@@ -71,14 +71,17 @@ def rel_prop(model: tf.keras.Sequential, image: np.ndarray, mask: np.ndarray, ep
 
     # TODO: Vielleicht z^B-Regel für letzte Schicht anwenden --> s. Tutorial
     for l in range(0,L)[::-1]:
-        if isinstance(layers[l], tf.keras.layers.MaxPool2D):
-            layers[l] = tf.keras.layers.AvgPool2D(layers[l].pool_size)
-
-        if isinstance(layers[l], (tf.keras.layers.Conv2D, tf.keras.layers.Dense, tf.keras.layers.AvgPool2D, tf.keras.layers.Flatten)):
-            print(layers[l])
-            R[l] = calc_r(R[l+1], outputs[l], layers[l])
+        layer = layers[l]
+        output = outputs[l]
+        R_old = R[l+1]
+        if isinstance(layer, tf.keras.layers.MaxPool2D):
+            layer = tf.keras.layers.AvgPool2D(layers[l].pool_size)
+        # R[l] = calc_r(R[l + 1], outputs[l], layers[l])
+        if isinstance(layer, (tf.keras.layers.Conv2D, tf.keras.layers.Dense, tf.keras.layers.AvgPool2D, tf.keras.layers.Flatten)):
+            print(layer)
+            R[l] = calc_r(R_old, output, layer)
         else:
-            R[l] = R[l+1]
+            R[l] = R_old
 
     relevance = np.reshape(R[0], image.shape)
 
