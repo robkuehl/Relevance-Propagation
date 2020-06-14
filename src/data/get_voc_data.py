@@ -120,7 +120,8 @@ def labels_to_pickle(voc_path):
             
 # create a dataframe with binary labels
 
-def get_voc_labels(voc_path):
+def get_voc_labels(voc_path, classes):
+    labels_to_pickle(voc_path)
     labels = []
     image_names = []
     for file in os.listdir(pathjoin(voc_path, 'JPEGImages')):
@@ -139,13 +140,18 @@ def get_voc_labels(voc_path):
                        columns=mlb.classes_,
                        index=image_names)
     
+    if classes == None or len(classes)==0:
+        classes = list(label_df.columns)
+    label_df = label_df[(label_df[classes]!=np.zeros(len(classes))).any(axis=1)][classes]
+    
     return label_df
 
 
 
 # Load the numpy-images from the pickle files
 
-def get_voc_images(voc_path:Path, image_type:str, image_names:list):
+def get_voc_images(voc_path:Path, image_type:str, label_df:pd.DataFrame):
+    image_names = list(label_df.index)
     if image_type == 'regular':
         source_path = pathjoin(voc_path, 'JPEGImages', 'Images_as_pickle')
     elif image_type == 'same_padded':
@@ -154,27 +160,12 @@ def get_voc_images(voc_path:Path, image_type:str, image_names:list):
         source_path = pathjoin(voc_path, 'JPEGImages_zero_padded', 'Images_as_pickle')
     elif image_type == 'reshaped':
         source_path = pathjoin(voc_path, 'JPEGImages_reshaped', 'Images_as_pickle')
+    images_to_numpy(voc_path, image_type)
     images = []
     for file in image_names:
         image_path = pathjoin(source_path, file+'.pickle')
         with open(image_path, 'rb') as image_file:
             images.append(pickle.load(image_file))
             
-    return images
+    return np.asarray(images)
 
-
-# method to load data for a specific set of labels
-# it returns images for whom at least one of the labels is 1 and the corresponding label dataframe
-# if classes is None or empty it returns the whole dataset
-
-def get_voc_data(voc_path: Path, image_type:str, classes: list, training:bool):
-    images_to_numpy(voc_path, image_type)
-    labels_to_pickle(voc_path)
-    label_df = get_voc_labels(voc_path)
-    if classes == None or len(classes)==0:
-        classes = list(label_df.columns)
-    new_label_df = label_df[(label_df[classes]!=np.zeros(len(classes))).any(axis=1)][classes]
-    images = get_voc_images(voc_path, image_type, list(new_label_df.index))
-    
-    
-    return new_label_df, images
