@@ -133,18 +133,39 @@ R_{i}^{(l)}=\sum_{j} \frac{z_{i j}}{\sum_{i^{\prime}} z_{i^{\prime} j}} R_{j}^{(
 
 \frame{\frametitle{LRP für CNNs}
 \begin{itemize}
-\item Basisformel
+\item Algorithmus [QUELLE]
 \begin{align*}
 \begin{array}{ll}
-\forall_{k}: z_{k}=\epsilon+\sum_{0, j} a_{j} \cdot \rho\left(w_{j k}\right) & \text { (forward pass) } \\
-\forall_{k}: s_{k}=R_{k} / z_{k} & \text { (element-wise division) } \\
-\forall_{j}: c_{j}=\sum_{k} \rho\left(w_{j k}\right) \cdot s_{k} & \text { (backward pass) } \\
-\forall_{j}: R_{j}=a_{j} c_{j} & \text { (element-wise product) }
+\forall_{k}: z_{k}=\sum_{0, j} x_{j} \cdot \rho\left(w_{j k}\right) & \text { (Forward Pass) } \\
+\forall_{k}: s_{k}=R_{k} / z_{k} & \text { (Elementweise Division) } \\
+\forall_{j}: c_{j}=\sum_{k} \rho\left(w_{j k}\right) \cdot s_{k} & \text { (Backward Pass) } \\
+\forall_{j}: R_{j}=x_{j} c_{j} & \text { (Elementweises Produkt) }
 \end{array}
 \end{align*}
 
-\item Problematisch bei komplexeren Layern (\textit{Beispiel: ConvLayer})
-\item Betrachte alternative Implementierung
+\item Ergebnis identisch
+\item Was ist der Vorteil dieser neuen Reihenfolge?
+
+\end{itemize}
+}
+
+\frame{\frametitle{LRP für CNNs}
+\begin{itemize}
+\item Schritt 3 kann auch als Gradient ausgedrückt werden:
+\begin{align*}
+\begin{array}{ll}
+\forall_{j}: c_{j}=\sum_{k} \rho\left(w_{j k}\right) \cdot s_{k} & \text { (Backward Pass)}, \\
+\end{array}
+\end{align*}
+
+\item denn:
+\begin{align*}
+c_{j}&=\left[\nabla\left(\sum_{k} z_{k}(\boldsymbol{x}) \cdot s_{k}\right)\right]_{j} \\
+	 &=\left[\nabla\left(\sum_{k} \left(\sum_{j'}(\boldsymbol{x_{j'}} \cdot w_{j'k})\right) \cdot s_{k}\right)\right]_{j} \\
+	 &=\left[\sum_{k} w_{jk} \cdot s_k \right]_{j}, 
+\end{align*}
+wobei $s_k$ als Konstante behandelt wird.
+\item Implementierung ist nun unabhängig der Art des Layers anwendbar.
 
 \end{itemize}
 }

@@ -15,9 +15,18 @@ def rho(layer, c: int):
         print('Failed')
     return layer
 
-def calc_r(R: np.ndarray, prev_output: np.ndarray, layer, eps: float, gamma: float):
+def calc_r(R: np.ndarray, prev_output: np.ndarray, layer, counter: int, eps: float, gamma: float, comb: bool):
 
     prev_output = tf.constant(prev_output)
+    if comb:
+        if 15 <= counter <= 16:
+            eps = 0
+            gamma = 0
+        elif 10 <= counter < 15:
+            gamma = 0
+        else:
+            eps = 0
+
     if isinstance(layer, tf.keras.layers.Conv2D) or isinstance(layer, tf.keras.layers.Dense):
         layer = rho(layer, gamma)
     with tf.GradientTape() as gt:
@@ -48,14 +57,16 @@ def calc_r(R: np.ndarray, prev_output: np.ndarray, layer, eps: float, gamma: flo
     
 
 # Funktion für Relevance Propagation
-def rel_prop(model: tf.keras.Sequential, image: np.ndarray, mask: np.ndarray, eps: float = 0, gamma: float = 0) -> np.ndarray:
-    layers = model.layers
+def rel_prop(model: tf.keras.Sequential, image: np.ndarray, mask: np.ndarray, eps: float = 0, gamma: float = 0, comb: bool = False) -> np.ndarray:
 
-    # Hilfsmodel zum Extrahieren der Outputs des Hidden Layers
-    extractor = tf.keras.Model(inputs=model.inputs,
-                               outputs=[layer.output for layer in model.layers])
+    new_model = tf.keras.models.clone_model(model)
+    new_model.set_weights(model.get_weights())
 
-    outputs =[image] + extractor(np.array([image]))
+    layers = new_model.layers
+
+    outputs = [image]
+    for i, layer in enumerate(layers):
+        outputs.append(layer(outputs[i]))
 
     # Anzahl der Schichten
     L = len(layers)
@@ -64,7 +75,7 @@ def rel_prop(model: tf.keras.Sequential, image: np.ndarray, mask: np.ndarray, ep
     output_const = tf.constant(outputs[-1])
     output_const = output_const * mask
     R = [None]*L + [output_const]
-
+    tmp=1
     # TODO: Vielleicht z^B-Regel für letzte Schicht anwenden --> s. Tutorial
     for l in range(0,L)[::-1]:
         layer = layers[l]
@@ -74,10 +85,11 @@ def rel_prop(model: tf.keras.Sequential, image: np.ndarray, mask: np.ndarray, ep
             layer = tf.keras.layers.AvgPool2D(layers[l].pool_size)
         # R[l] = calc_r(R[l + 1], outputs[l], layers[l])
         if isinstance(layer, (tf.keras.layers.Conv2D, tf.keras.layers.Dense, tf.keras.layers.AvgPool2D, tf.keras.layers.Flatten)):
-            R[l] = calc_r(R_old, output, layer, eps, gamma)
+            R[l] = calc_r(R_old, output, layer, l, eps, gamma, comb)
         else:
             R[l] = R_old
 
     relevance = np.reshape(R[0], image.shape)
+    relevance = relevance.sum(axis=3)
 
     return relevance
