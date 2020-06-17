@@ -169,3 +169,26 @@ def get_voc_images(voc_path:Path, image_type:str, label_df:pd.DataFrame):
             
     return np.asarray(images)
 
+
+def get_training_data(voc_path, classes, dataset):
+    label_df = get_voc_labels(voc_path=voc_path, classes=classes)
+    if classes == ['person', 'horse']:
+        horse_and_person_df = label_df[(label_df==[1,1]).all(axis=1)]
+        horse_df = label_df[(label_df==[0,1]).all(axis=1)]
+        person_df = label_df[(label_df==[1,0]).all(axis=1)]
+        
+        new_person_df = person_df.sample(horse_df.shape[0])
+        label_df = pd.concat([horse_df, new_person_df, horse_and_person_df])
+        
+    images = get_voc_images(voc_path=voc_path, image_type=dataset[4:], label_df=label_df)
+    labels = label_df.values
+    
+    train_images, test_images, train_labels, test_labels = train_test_split(images, labels, test_size=0.2, random_state=42)
+    
+    data = {'train_images': train_images,
+                'train_labels': train_labels,
+                'test_images': test_images,
+                'test_labels': test_labels
+        }
+    
+    return data, dict(zip([i for i in range(len(classes))], classes))
