@@ -10,7 +10,7 @@ model = keras.models.load_model('pretrained_models/cifar10_model_3_multiclass_12
 model.summary()
 
 idx = np.random.randint(0,10000)
-idx = 2482
+# idx = 5000
 pred(model, idx, 'test', eps=0.2, gamma=0.25)
 
 

@@ -4,31 +4,18 @@ import numpy as np
 import time
 import matplotlib.pyplot as plt
 from matplotlib import colors
-from .rel_prop import *
+from .rel_prop_grad import *
 
 (x_train, y_train), (x_test, y_test) = keras.datasets.cifar10.load_data()
 x_train = x_train/255.
 x_test = x_test/255.
 
-classes = {0 : 'airplane',
-1 : 'automobile',
-2 : 'bird',
-3 : 'cat',
-4 : 'deer',
-5 : 'dog',
-6 : 'frog',
-7 : 'horse',
-8 : 'ship',
-9 : 'truck'}
-
 
 class MidpointNormalize(colors.Normalize):
     """
     Normalise the colorbar so that diverging bars work there way either side from a prescribed midpoint value)
-    e.g. im=ax1.imshow(array, norm=MidpointNormalize(midpoint=0.,vmin=-100, vmax=100))
 
-    Quelle:
-    https://stackoverflow.com/questions/48598291/how-to-obtain-transparency-for-masked-values-in-customised-colormap-matplotlib
+    e.g. im=ax1.imshow(array, norm=MidpointNormalize(midpoint=0.,vmin=-100, vmax=100))
     """
 
     def __init__(self, vmin=None, vmax=None, midpoint=None, clip=False):
@@ -42,18 +29,7 @@ class MidpointNormalize(colors.Normalize):
         return np.ma.masked_array(np.interp(value, x, y), np.isnan(value))
 
 
-# TODO: Plotten in /src/plotting/ auslagern
-def pred(model: tf.keras.Sequential, idx: int, dataset: str, eps: float, gamma: float):
-    """
-    Funktion wertet Input mit Hilfe des Modells aus und wendet Relevance Propagation mit den gewählten Parametern an.
-    Plottet im Anschluss Schaubild, das Input und alle drei Versionen + Komposition zeigt.
-    :param model: Trainiertes KNN
-    :param idx: Index des auszuwertenden Testbildes
-    :param dataset: Angabe ob Train- oder Test-Set verwendet wird
-    :param eps: Epsilon für LRP-eps
-    :param gamma: Gamma für LRP-gamma
-    :return:
-    """
+def pred(model, idx, dataset: str, eps: float, gamma: float):
     if dataset is 'train':
         data_x = x_train
         data_y = y_train
@@ -77,13 +53,13 @@ def pred(model: tf.keras.Sequential, idx: int, dataset: str, eps: float, gamma: 
     mask = tf.constant(mask, dtype=tf.float32)
 
 
-    plt.subplot(2, 3, 1)
+    plt.subplot(3, 2, 1)
     plt.title(f'{dataset}_{idx}')
     fig = plt.imshow(data_x[idx])
     fig.axes.get_xaxis().set_visible(False)
     fig.axes.get_yaxis().set_visible(False)
 
-    plt.subplot(2, 3, 2)
+    plt.subplot(3, 2, 2)
     plt.title(f'LRP-0')
     relevance = rel_prop(model, img, mask, eps=0, gamma=0)
     fig = plt.imshow(relevance[0], cmap='seismic',
@@ -91,7 +67,7 @@ def pred(model: tf.keras.Sequential, idx: int, dataset: str, eps: float, gamma: 
     fig.axes.get_xaxis().set_visible(False)
     fig.axes.get_yaxis().set_visible(False)
 
-    plt.subplot(2, 3, 4)
+    plt.subplot(3, 2, 3)
     plt.title(f'LRP-ε (ε={eps})')
     relevance = rel_prop(model, img, mask, eps=eps, gamma=0)
     fig = plt.imshow(relevance[0], cmap='seismic',
@@ -99,7 +75,7 @@ def pred(model: tf.keras.Sequential, idx: int, dataset: str, eps: float, gamma: 
     fig.axes.get_xaxis().set_visible(False)
     fig.axes.get_yaxis().set_visible(False)
 
-    plt.subplot(2, 3, 5)
+    plt.subplot(3, 2, 4)
     plt.title(f'LRP-γ (γ={gamma})')
     relevance = rel_prop(model, img, mask, eps=0, gamma=gamma)
     fig = plt.imshow(relevance[0], cmap='seismic',
@@ -107,7 +83,7 @@ def pred(model: tf.keras.Sequential, idx: int, dataset: str, eps: float, gamma: 
     fig.axes.get_xaxis().set_visible(False)
     fig.axes.get_yaxis().set_visible(False)
 
-    plt.subplot(2, 3, (3, 6))
+    plt.subplot(3, 2, (5, 6))
     plt.title(f'LRP-Composite \neps = {2*eps}\ngamma = {2*gamma}')
     relevance = rel_prop(model, img, mask, eps=2*eps, gamma=2*gamma, comb=True)
     fig = plt.imshow(relevance[0], cmap='seismic',
@@ -117,4 +93,23 @@ def pred(model: tf.keras.Sequential, idx: int, dataset: str, eps: float, gamma: 
 
     plt.savefig('figures/' + persist_string)
     plt.show()
+
+
+
+
+
+
+
+
+
+classes = {0 : 'airplane',
+1 : 'automobile',
+2 : 'bird',
+3 : 'cat',
+4 : 'deer',
+5 : 'dog',
+6 : 'frog',
+7 : 'horse',
+8 : 'ship',
+9 : 'truck'}
 
