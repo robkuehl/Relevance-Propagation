@@ -132,6 +132,10 @@ R_{i}^{(l)}=\sum_{j} \frac{z_{i j}}{\sum_{i^{\prime}} z_{i^{\prime} j}} R_{j}^{(
 }
 
 \frame{\frametitle{LRP für CNNs}
+
+\begin{align*}
+R_{i}^{(l)}=\sum_{j} \frac{z_{i j}}{\sum_{i^{\prime}} z_{i^{\prime} j}} R_{j}^{(l+1)} \quad \text { mit } \quad \mathrm{z}_{\mathrm{ij}}=\mathrm{x}_{\mathrm{i}}^{(1)} \mathrm{w}_{\mathrm{ij}}^{(l,l+1)}
+\end{align*}
 \begin{itemize}
 \item Algorithmus [QUELLE]
 \begin{align*}
@@ -169,4 +173,78 @@ wobei $s_k$ als Konstante behandelt wird.
 
 \end{itemize}
 }
+
+\frame{\frametitle{Implementierte Varianten}
+\begin{itemize}
+\item LRP-0:
+\begin{align*}
+R_{j}=\sum_{k} \frac{a_{j} w_{j k}}{\sum_{0, j'} a_{j'} w_{j' k}} R_{k}
+\end{align*}
+
+\item LRP-$\epsilon$:
+\begin{align*}
+R_{j}=\sum_{k} \frac{a_{j} w_{j k}}{\epsilon + \sum_{0, j'} a_{j'} w_{j' k}} R_{k}
+\end{align*}
+
+\item LRP-$\gamma$:
+\begin{align*}
+R_{j}=\sum_{k} \frac{a_{j} \cdot \left(w_{j k} + \gamma w_{jk}^{+}\right)}{\sum_{0, j'} a_{j} \cdot \left(w_{j'k} + \gamma w_{j'k}^{+}\right)} R_{k}
+\end{align*}
+\end{itemize}
+}
+
+\frame{\frametitle{Vergleichsbilder}
+
+\begin{figure}
+\begin{center}
+\vspace{1cm}
+\includegraphics[width=\textwidth]{grafiken/test_3407_beetle.png}
+%\raisebox{-7cm}[0pt][0pt]{\includegraphics[scale=0.7]{grafiken/test_3407_beetle.png}}
+\caption{LRP-Varianten auf Cifar10-Datensatz}
+
+\end{center}
+\end{figure}
+}
+
+\frame{\frametitle{Vergleichsbilder}
+
+\begin{figure}
+\begin{center}
+\vspace{1cm}
+\includegraphics[width=\textwidth]{grafiken/test_5551_horse.png}
+%\raisebox{-7cm}[0pt][0pt]{\includegraphics[scale=0.7]{grafiken/test_5551_horse.png}}
+\caption{LRP-Varianten auf Cifar10-Datensatz}
+
+\end{center}
+\end{figure}
+}
+
+
+\frame{\frametitle{LRP-Composition}
+\begin{itemize}
+\item \textbf{Idee:} Verwende unterschiedliche Varianten für verschiedene Layer des Netzes um Vorteile zu kombinieren \newline
+\item \textbf{Beispiel:} Netz mit 10 Layern 
+\begin{itemize}
+\item LRP-0 auf Layern 10 und 9
+\item LRP-$\epsilon$ auf Layern 8 bis 5
+\item LRP-$\gamma$ auf Layern 4 bis 1 \newline
+\end{itemize}
+\item Auswahl der Parameter hängt stark von Netzarchitektur und der gewünschten Darstellung ab.
+\end{itemize}
+}
+
+\frame{\frametitle{Beispiel LRP-Composition}
+
+\begin{figure}
+\begin{center}
+
+\includegraphics[scale=0.225]{grafiken/test_2482_composite.png}
+%\raisebox{-7cm}[0pt][0pt]{\includegraphics[scale=0.7]{grafiken/test_5551_horse.png}}
+\caption{LRP-Composition auf Cifar10-Datensatz}
+
+\end{center}
+\end{figure}
+}
+
+
 \end{document}
