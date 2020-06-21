@@ -8,8 +8,13 @@ Created on Fri Jun 12 09:42:09 2020
 import tensorflow as tf
 import os
 import pickle
+import random
 from models.multilabel_cnn import ml_cnn_classifier
 from models.multiclass_cnn import mc_cnn_classifier
+from rel_prop.stuff.help_func import *
+
+
+os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
 # if GPU is used
 physical_devices = tf.config.list_physical_devices('GPU')
@@ -63,7 +68,9 @@ def mc_evaluate_config(model_name, dataset, final_activation, loss, classes, bat
     return top1_score, top3_score, top3_predictions, classifier
     
 
-
+def run_rel_prop(model, index, images):
+    # TODO: Rel prop einfügen
+    pass
 
 
 
@@ -78,6 +85,9 @@ if __name__ == '__main__':
     epochs = 100
     #top1_score, top3_score, top3_predictions = evaluate_config(model_name, dataset, classification_type, classes=['person', 'horse'])
     eval_df, history, classifier = ml_evaluate_config(model_name, dataset, final_activation, loss, classes, batch_size, epochs)
+    model = classifier.model
+    images = classifier.test_images
+    index = random.randint(0, images.shape[0])
     
-    
+    run_rel_prop(model, index, images)
     
