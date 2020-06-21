@@ -1,4 +1,7 @@
 *.pickle
-*.h5
 __pycache__
 *pyc
+*.h5
+VOCdevkit
+*.vscode
+*checkpoint.ipynb
