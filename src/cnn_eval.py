@@ -45,7 +45,10 @@ def ml_evaluate_config(model_name, dataset, final_activation, loss, classes, bat
         modelfile_name, history = classifier.run_model(batch_size=batch_size, epochs=epochs)
     eval_df = classifier.eval()
     
-    return eval_df, history, classifier
+    return eval_df, classifier
+    
+    
+    
     
 
 
@@ -77,13 +80,14 @@ def mc_evaluate_config(model_name, dataset, final_activation, loss, classes, bat
 """
     
 
-def run_rel_prop(model, index, images, eps, gamma):
-
-    image = images[index]
+def run_rel_prop(classifier, eps, gamma):
+    index = random.randint(0, classifier.test_images.shape[0])
+    model = classifier.model
+    image = classifier.test_images[index]
     label = classifier.test_labels[index]
     dataset = 'pascal_test'
 
-    prediction = model.predict(np.array(image, dtype=np.dtype(float)))[0]
+    prediction = model.predict(np.asarray([image]))[0]
 
     print(f'Correct Label: {label}\n')
 
@@ -146,20 +150,16 @@ def run_rel_prop(model, index, images, eps, gamma):
 if __name__ == '__main__':
     dirname = os.path.dirname(__file__)
     model_name='vgg16'
-    #dataset='cifar10'
     dataset='pascal_voc_reshaped'
     final_activation='sigmoid'
     loss= 'binary_crossentropy'
     classes=['person', 'horse']
-    model_path = os.path.join(dirname, '..', 'models','cnn', 'pascal_voc_reshaped_vgg16_multilabel_21_06_2020-15.h5')
+    #model_path = os.path.join(dirname, '..', 'models','cnn', 'pascal_voc_reshaped_vgg16_multilabel_21_06_2020-15.h5')
+    model_path=None
     batch_size = 5
     epochs = 100
-    #top1_score, top3_score, top3_predictions = evaluate_config(model_name, dataset, classification_type, classes=['person', 'horse'])
-    eval_df, history, classifier = ml_evaluate_config(model_name, dataset, final_activation, loss, classes, batch_size, epochs, model_path)
-    model = classifier.model
-    images = classifier.test_images
-    index = random.randint(0, images.shape[0])
+    eval_df, classifier = ml_evaluate_config(model_name, dataset, final_activation, loss, classes, batch_size, epochs, model_path)
     eps = 0.25
     gamma = 0.25
     
-    run_rel_prop(model, index, images, eps, gamma)
+    run_rel_prop(classifier, eps, gamma)
