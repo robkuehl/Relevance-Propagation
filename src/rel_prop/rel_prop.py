@@ -97,7 +97,11 @@ def rel_prop(model: tf.keras.Sequential, image: np.ndarray, mask: np.ndarray, ep
 
     # Kopie des Models wird angefertigt, damit Gewichte durch Funktion rho nicht für nachfolgende Anwendungen verändert
     # werden.
-    new_model = tf.keras.models.clone_model(model)
+    
+    new_model = Sequential()
+    for layer in model.layers:
+        new_model.add(layer)
+    #new_model = tf.keras.models.clone_model(tf.keras.models.Model(model))
     new_model.set_weights(model.get_weights())
 
     # Schichten des Modells werden in Array gespeichert
