@@ -14,10 +14,10 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 
-from src.models.multilabel_cnn import ml_cnn_classifier
-from src.models.multiclass_cnn import mc_cnn_classifier
-from src.rel_prop.rel_prop import rel_prop
-from src.rel_prop.help_func import MidpointNormalize
+from models.multilabel_cnn import ml_cnn_classifier
+from models.multiclass_cnn import mc_cnn_classifier
+from rel_prop.rel_prop import rel_prop
+from rel_prop.help_func import MidpointNormalize
 
 
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
@@ -37,18 +37,19 @@ mc_dictpath = os.path.join(dirname, '..', 'models','cnn', 'multi_class_results.p
 ml_dictpath = os.path.join(dirname, '..', 'models','cnn', 'multi_label_results.pickle')
 
     
-def ml_evaluate_config(model_name, dataset, final_activation, loss, classes, batch_size, epochs):
+def ml_evaluate_config(model_name, dataset, final_activation, loss, classes, batch_size, epochs, model_path):
             
-    classifier = ml_cnn_classifier(model_name=model_name, dataset=dataset, final_activation=final_activation, loss=loss, classes=classes)
+    classifier = ml_cnn_classifier(model_name=model_name, dataset=dataset, final_activation=final_activation, loss=loss, classes=classes, model_path=model_path)
     classifier.create_model()
-    modelfile_name, history = classifier.run_model(batch_size=batch_size, epochs=epochs)
+    if model_path != None:
+        modelfile_name, history = classifier.run_model(batch_size=batch_size, epochs=epochs)
     eval_df = classifier.eval()
     
     return eval_df, history, classifier
     
 
 
-
+"""
 
 def mc_evaluate_config(model_name, dataset, final_activation, loss, classes, batch_size, epochs):
     if not os.path.isfile(ml_dictpath):
@@ -72,6 +73,8 @@ def mc_evaluate_config(model_name, dataset, final_activation, loss, classes, bat
         pickle.dump(results, file)
         
     return top1_score, top3_score, top3_predictions, classifier
+    
+"""
     
 
 def run_rel_prop(model, index, images, eps, gamma):
@@ -141,16 +144,18 @@ def run_rel_prop(model, index, images, eps, gamma):
 
 
 if __name__ == '__main__':
+    dirname = os.path.dirname(__file__)
     model_name='vgg16'
     #dataset='cifar10'
     dataset='pascal_voc_reshaped'
     final_activation='sigmoid'
     loss= 'binary_crossentropy'
     classes=['person', 'horse']
+    model_path = os.path.join(dirname, '..', 'models','cnn', 'pascal_voc_reshaped_vgg16_multilabel_21_06_2020-15.h5')
     batch_size = 5
     epochs = 100
     #top1_score, top3_score, top3_predictions = evaluate_config(model_name, dataset, classification_type, classes=['person', 'horse'])
-    eval_df, history, classifier = ml_evaluate_config(model_name, dataset, final_activation, loss, classes, batch_size, epochs)
+    eval_df, history, classifier = ml_evaluate_config(model_name, dataset, final_activation, loss, classes, batch_size, epochs, model_path)
     model = classifier.model
     images = classifier.test_images
     index = random.randint(0, images.shape[0])

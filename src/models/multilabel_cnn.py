@@ -1,6 +1,7 @@
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 from keras.metrics import Precision, Recall, BinaryAccuracy
+from tensorflow.keras.models import load_model
 
 import numpy as np
 import pandas as pd
@@ -8,6 +9,7 @@ import matplotlib.pyplot as plt
 import ntpath
 from datetime import datetime
 from PIL import Image
+from pathlib import Path
 
 import os
 from os.path import join as pathjoin
@@ -21,7 +23,8 @@ from models.cnn_models import get_model
 
 class ml_cnn_classifier:
     
-    def __init__(self, model_name:str, dataset:str, final_activation:str, loss:str, classes:list=None):
+    def __init__(self, model_name:str, dataset:str, final_activation:str, loss:str, classes:list=None, model_path: str=None):
+        self.model_path = model_path
         self.model_name = model_name
         self.dataset = dataset 
         self.final_activation = final_activation
@@ -49,13 +52,16 @@ class ml_cnn_classifier:
     
 
     def create_model(self):
-        self.model = get_model(model_name=self.model_name, input_shape=self.input_shape, output_shape=self.output_shape, final_activation=self.final_activation)
-        opt = 'adam'
-        #opt = SGD(lr=0.001, momentum=0.9)
-        self.model.compile(optimizer=opt,
-                loss=self.loss,
-                metrics=self.metrics)
-        self.model.summary()
+        if self.model_path == None:
+            self.model = get_model(model_name=self.model_name, input_shape=self.input_shape, output_shape=self.output_shape, final_activation=self.final_activation)
+            opt = 'adam'
+            #opt = SGD(lr=0.001, momentum=0.9)
+            self.model.compile(optimizer=opt,
+                    loss=self.loss,
+                    metrics=self.metrics)
+            self.model.summary()
+        else:
+            self.model = load_model(Path(self.model_path))
         
     
     def run_model(self, batch_size, epochs):
