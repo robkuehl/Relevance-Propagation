@@ -52,19 +52,21 @@ class ml_cnn_classifier:
     
 
     def create_model(self):
-        if self.model_path == None:
-            self.model = get_model(model_name=self.model_name, input_shape=self.input_shape, output_shape=self.output_shape, final_activation=self.final_activation)
-            opt = 'adam'
-            #opt = SGD(lr=0.001, momentum=0.9)
-            self.model.compile(optimizer=opt,
-                    loss=self.loss,
-                    metrics=self.metrics)
-            self.model.summary()
-        else:
-            self.model = load_model(Path(self.model_path))
+        self.model = get_model(model_name=self.model_name, input_shape=self.input_shape, output_shape=self.output_shape, final_activation=self.final_activation)
+        opt = 'adam'
+        #opt = SGD(lr=0.001, momentum=0.9)
+        self.model.compile(optimizer=opt,
+                loss=self.loss,
+                metrics=self.metrics)
+        self.model.summary()
         
     
     def run_model(self, batch_size, epochs):
+        if self.model_path != None:
+            model.load_weights(self.model_path)
+            return None, None
+        else:
+            pass
         # data augmentation
         #create validation data
         self.train_images, self.validation_images, self.train_labels, self.validation_labels = train_test_split(self.train_images, self.train_labels, test_size=0.2)

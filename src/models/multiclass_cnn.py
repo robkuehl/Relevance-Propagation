@@ -18,7 +18,6 @@ from data.get_data import get_fashion_mnist, get_cifar10
 from data.get_voc_data import pascal_data_generator
 from models.cnn_models import get_model
 
-voc_path='/home/robin/Documents/VOCdevkit/VOC2012'
 
 class mc_cnn_classifier:
     

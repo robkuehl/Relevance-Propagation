@@ -41,7 +41,7 @@ def ml_evaluate_config(model_name, dataset, final_activation, loss, classes, bat
             
     classifier = ml_cnn_classifier(model_name=model_name, dataset=dataset, final_activation=final_activation, loss=loss, classes=classes, model_path=model_path)
     classifier.create_model()
-    if model_path != None:
+    if model_path == None:
         modelfile_name, history = classifier.run_model(batch_size=batch_size, epochs=epochs)
     eval_df = classifier.eval()
     
@@ -154,10 +154,10 @@ if __name__ == '__main__':
     final_activation='sigmoid'
     loss= 'binary_crossentropy'
     classes=['person', 'horse']
-    #model_path = os.path.join(dirname, '..', 'models','cnn', 'pascal_voc_reshaped_vgg16_multilabel_21_06_2020-15.h5')
-    model_path=None
+    model_path = os.path.join(dirname, '..', 'models','cnn', 'pascal_voc_reshaped_vgg16_multilabel_21_06_2020-15.h5')
+    #model_path=None
     batch_size = 5
-    epochs = 100
+    epochs = 5
     eval_df, classifier = ml_evaluate_config(model_name, dataset, final_activation, loss, classes, batch_size, epochs, model_path)
     eps = 0.25
     gamma = 0.25
