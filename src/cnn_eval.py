@@ -5,13 +5,19 @@ Created on Fri Jun 12 09:42:09 2020
 
 @author: robin
 """
-import tensorflow as tf
+import time
 import os
 import pickle
 import random
-from models.multilabel_cnn import ml_cnn_classifier
-from models.multiclass_cnn import mc_cnn_classifier
-from rel_prop.stuff.help_func import *
+
+import tensorflow as tf
+import numpy as np
+import matplotlib.pyplot as plt
+
+from src.models.multilabel_cnn import ml_cnn_classifier
+from src.models.multiclass_cnn import mc_cnn_classifier
+from src.rel_prop.rel_prop import rel_prop
+from src.rel_prop.help_func import MidpointNormalize
 
 
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
@@ -68,10 +74,70 @@ def mc_evaluate_config(model_name, dataset, final_activation, loss, classes, bat
     return top1_score, top3_score, top3_predictions, classifier
     
 
-def run_rel_prop(model, index, images):
-    # TODO: Rel prop einfügen
-    pass
+def run_rel_prop(model, index, images, eps, gamma):
 
+    image = images[index]
+    label = classifier.test_labels[index]
+    dataset = 'pascal_test'
+
+    prediction = model.predict(np.array(image, dtype=np.dtype(float)))[0]
+
+    print(f'Correct Label: {label}\n')
+
+    print(f'Network Decision: {prediction}')
+
+    timestamp = time.strftime('%d-%m_%Hh%M')
+
+    label_indices = np.arange(0,len(label))[label == 1]
+
+    for idx in label_indices:
+        persist_string = f'{dataset}_{index}_{timestamp}_class_{idx}'
+
+        img = np.array([image.astype(float)])
+        mask = np.zeros(len(label), dtype=np.dtype(float))
+        mask[idx] = 1.
+        mask = tf.constant(mask, dtype=tf.float32)
+
+        plt.subplot(2, 3, 1)
+        plt.title(f'{dataset}_{index}')
+        fig = plt.imshow(image)
+        fig.axes.get_xaxis().set_visible(False)
+        fig.axes.get_yaxis().set_visible(False)
+
+        plt.subplot(2, 3, 2)
+        plt.title(f'LRP-0')
+        relevance = rel_prop(model, img, mask, eps=0, gamma=0)
+        fig = plt.imshow(relevance[0], cmap='seismic',
+                   norm=MidpointNormalize(midpoint=0, vmin=relevance[0].min(), vmax=relevance[0].max()))
+        fig.axes.get_xaxis().set_visible(False)
+        fig.axes.get_yaxis().set_visible(False)
+
+        plt.subplot(2, 3, 4)
+        plt.title(f'LRP-ε (ε={eps})')
+        relevance = rel_prop(model, img, mask, eps=eps, gamma=0)
+        fig = plt.imshow(relevance[0], cmap='seismic',
+                   norm=MidpointNormalize(midpoint=0, vmin=relevance[0].min(), vmax=relevance[0].max()))
+        fig.axes.get_xaxis().set_visible(False)
+        fig.axes.get_yaxis().set_visible(False)
+
+        plt.subplot(2, 3, 5)
+        plt.title(f'LRP-γ (γ={gamma})')
+        relevance = rel_prop(model, img, mask, eps=0, gamma=gamma)
+        fig = plt.imshow(relevance[0], cmap='seismic',
+                   norm=MidpointNormalize(midpoint=0, vmin=relevance[0].min(), vmax=relevance[0].max()))
+        fig.axes.get_xaxis().set_visible(False)
+        fig.axes.get_yaxis().set_visible(False)
+
+        plt.subplot(2, 3, (3, 6))
+        plt.title(f'LRP-Composite \neps = {2*eps}\ngamma = {2*gamma}')
+        relevance = rel_prop(model, img, mask, eps=2*eps, gamma=2*gamma, comb=True)
+        fig = plt.imshow(relevance[0], cmap='seismic',
+                   norm=MidpointNormalize(midpoint=0, vmin=relevance[0].min(), vmax=relevance[0].max()))
+        fig.axes.get_xaxis().set_visible(False)
+        fig.axes.get_yaxis().set_visible(False)
+
+        plt.savefig('figures/' + persist_string)
+    plt.show()
 
 
 if __name__ == '__main__':
@@ -88,6 +154,7 @@ if __name__ == '__main__':
     model = classifier.model
     images = classifier.test_images
     index = random.randint(0, images.shape[0])
+    eps = 0.25
+    gamma = 0.25
     
-    run_rel_prop(model, index, images)
-    
+    run_rel_prop(model, index, images, eps, gamma)
