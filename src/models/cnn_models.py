@@ -1,6 +1,6 @@
-from keras.models import Sequential
-from keras.layers import Dense, Conv2D, Flatten, MaxPooling2D, AveragePooling2D, BatchNormalization, Dropout
-from keras.applications.vgg16 import VGG16
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Conv2D, Flatten, MaxPooling2D, AveragePooling2D, BatchNormalization, Dropout
+from tensorflow.keras.applications.vgg16 import VGG16
 
 def get_model(model_name: str, input_shape: tuple, output_shape: int, final_activation: str):
     
