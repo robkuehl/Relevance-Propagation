@@ -1,7 +1,7 @@
 # TODO: Anpassen der Klasse nach Muster von multilabel_cnn. Akut nicht lauffähig!
 
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from keras.callbacks import ModelCheckpoint, EarlyStopping
+from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
 
 import numpy as np
 import matplotlib.pyplot as plt

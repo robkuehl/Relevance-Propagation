@@ -1,6 +1,6 @@
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from keras.callbacks import ModelCheckpoint, EarlyStopping
-from keras.metrics import Precision, Recall, BinaryAccuracy
+from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
+from tensorflow.keras.metrics import Precision, Recall, BinaryAccuracy
 from tensorflow.keras.models import load_model
 
 import numpy as np
