@@ -155,9 +155,9 @@ if __name__ == '__main__':
     loss= 'binary_crossentropy'
     classes=['person', 'horse']
     model_path = os.path.join(dirname, '..', 'models','cnn', 'pascal_voc_reshaped_vgg16_multilabel_21_06_2020-15.h5')
-    #model_path=None
+    model_path=None
     batch_size = 5
-    epochs = 5
+    epochs = 20
     eval_df, classifier = ml_evaluate_config(model_name, dataset, final_activation, loss, classes, batch_size, epochs, model_path)
     eps = 0.25
     gamma = 0.25

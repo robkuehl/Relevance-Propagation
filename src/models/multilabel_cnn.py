@@ -72,7 +72,8 @@ class ml_cnn_classifier:
         self.train_images, self.validation_images, self.train_labels, self.validation_labels = train_test_split(self.train_images, self.train_labels, test_size=0.2)
         
         # create data generator
-        datagen = ImageDataGenerator(rotation_range=50.0,
+        datagen = ImageDataGenerator(rescale=1.0/255.0,
+                                     rotation_range=50.0,
                                      width_shift_range = 0.1,
                                      height_shift_range = 0.1,
                                      shear_range=0.1,
@@ -99,8 +100,9 @@ class ml_cnn_classifier:
         
 
     def pred(self, i):
+        
         image = self.test_images[i]
-        prediction = self.model.predict(np.array([image]))
+        prediction = self.model.predict(np.array([image/255]))
         plt.imshow(Image.fromarray(np.uint8(image)))
         plt.show()
         print('Correct Label: {}\n'.format(self.classes[np.argmax(self.test_labels[i])]))
@@ -120,7 +122,7 @@ class ml_cnn_classifier:
             image_name = self.test_labels_df.index[i]
             image = self.test_images[i]
             #model prediction
-            prediction = self.model.predict(np.asarray([image]))[0]
+            prediction = self.model.predict(np.asarray([image/255]))[0]
             correct_labels = [self.classes[j] for j in range(self.test_labels[0].shape[0]) if self.test_labels[i][j]==1]
             image_result = [image_name, correct_labels]+[prediction[i] for i in range(prediction.shape[0])]
             eval_df = eval_df.append(pd.DataFrame([image_result], columns=eval_df.columns), ignore_index=True)
