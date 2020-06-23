@@ -5,3 +5,5 @@ __pycache__
 VOCdevkit
 *.vscode
 *checkpoint.ipynb
+*.7z
+*.gz
