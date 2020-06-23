@@ -180,6 +180,7 @@ class pascal_data_generator():
 
     def get_training_data(self, classes, dataset):
         label_df = self.get_voc_labels(classes=classes)
+        classes = list(label_df.columns)
         if classes == ['person', 'horse']:
             horse_and_person_df = label_df[(label_df==[1,1]).all(axis=1)]
             horse_df = label_df[(label_df==[0,1]).all(axis=1)]

@@ -63,7 +63,7 @@ class ml_cnn_classifier:
     
     def run_model(self, batch_size, epochs):
         if self.model_path != None:
-            model.load_weights(self.model_path)
+            self.model.load_weights(self.model_path)
             return None, None
         else:
             pass
