@@ -12,6 +12,7 @@ def rho(layer: tf.keras.layers.Layer, c: int) -> tf.keras.layers.Layer:
     :return: Layer mit transformierten Gewichten
     """
     if isinstance(layer, tf.keras.layers.Conv2D) or isinstance(layer, tf.keras.layers.Dense):
+        """
         try:
             weights = layer.get_weights()
             layer.set_weights([tf.add(weights[0],tf.clip_by_value(np.multiply(layer.get_weights(), c)[0],
@@ -21,7 +22,7 @@ def rho(layer: tf.keras.layers.Layer, c: int) -> tf.keras.layers.Layer:
         except IndexError:
             # TODO: Logging im gesamten Projekt implementieren
             print('Failed')
-
+        """
     return layer
 
 

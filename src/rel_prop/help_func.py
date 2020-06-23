@@ -115,6 +115,10 @@ def pred(model: tf.keras.Sequential, idx: int, dataset: str, eps: float, gamma: 
     fig.axes.get_xaxis().set_visible(False)
     fig.axes.get_yaxis().set_visible(False)
 
-    plt.savefig('figures/' + persist_string)
+
+    dirname = os.path.dirname(__file__)
+    fig_path = os.path.join(dirname, '..', '..', 'figures', persist_string)
+    
+    plt.savefig(fig_path)
     plt.show()
 
