@@ -31,8 +31,7 @@ class ml_cnn_classifier:
         self.loss = loss
         self.metrics = [BinaryAccuracy(name='binary_accuracy'), Precision(name='precision'), Recall(name='recall')]
         self.monitor = 'val_binary_accuracy'
-        if dataset == 'fashion_mnist':
-            data, self.classes = get_fashion_mnist(encoded=True, training=True)
+        
         if dataset == 'cifar10':
             data, self.classes = get_cifar10(encoded=True, training=True)
         elif 'pascal_voc' in dataset:
@@ -48,6 +47,7 @@ class ml_cnn_classifier:
         self.input_shape = self.train_images[0].shape
         self.storage_path = pathjoin(os.path.dirname(__file__), '../../models/cnn/')
         self.output_shape = len(self.classes)
+        self.dt = datetime.now().strftime('%d_%m_%Y-%H-%M')
 
     
 
@@ -59,20 +59,33 @@ class ml_cnn_classifier:
                 loss=self.loss,
                 metrics=self.metrics)
         self.model.summary()
+        # Save model summary
+        filepath = pathjoin(self.storage_path, '{}_{}_{}_{}.txt'.format(self.dataset, self.model_name, 'multilabel', self.dt))
+        with open(filepath,'w') as fh:
+            # Pass the file handle in as a lambda function to make it callable
+            self.model.summary(print_fn=lambda x: fh.write(x + '\n'))
         
+    
     
     def run_model(self, batch_size, epochs):
         if self.model_path != None:
+            # if we use a pretrained model, we just load the weights
             self.model.load_weights(self.model_path)
             return None, None
-        else:
-            pass
+        
+        # else: train the model
+        
         # data augmentation
         #create validation data
         self.train_images, self.validation_images, self.train_labels, self.validation_labels = train_test_split(self.train_images, self.train_labels, test_size=0.2)
         
+        
         # create data generator
-        datagen = ImageDataGenerator(rotation_range=50.0,
+        train_datagen = ImageDataGenerator(rescale=1.0/255.0,
+                                     # calculate mean and standard deviation on the training dataset
+                                     featurewise_center=True, 
+                                     featurewise_std_normalization=True,
+                                     rotation_range=50.0,
                                      width_shift_range = 0.1,
                                      height_shift_range = 0.1,
                                      shear_range=0.1,
@@ -80,20 +93,49 @@ class ml_cnn_classifier:
                                      horizontal_flip=True,
                                      vertical_flip = True
                                      )
-
-    
-        steps = int(self.train_images.shape[0] / batch_size)
-        # prepare iterator
-        it_train = datagen.flow(self.train_images, self.train_labels, batch_size=batch_size)
-                
-        dt = datetime.now().strftime('%d_%m_%Y-%H')
-        storage_path = pathjoin(self.storage_path, '{}_{}_{}_{}.h5'.format(self.dataset, self.model_name, 'multilabel', dt))
+        train_datagen.fit(self.train_images)
         
-        checkpoint = ModelCheckpoint(storage_path, monitor=self.monitor, verbose=1, save_best_only=True, save_weights_only=False, mode='auto', period=1)
-        early = EarlyStopping(monitor=self.monitor, min_delta=0, patience=25, verbose=1, mode='auto')
-        #self.model.fit(x=self.train_images, y=self.train_labels, batch_size=batch_size, epochs=epochs, callbacks=[checkpoint,early], validation_split=0.2)
-        history = self.model.fit_generator(it_train, steps_per_epoch=steps, epochs=epochs, validation_data=(self.validation_images, self.validation_labels), callbacks=[checkpoint,early], verbose=1)
-        self.model.evaluate(x=self.test_images, y=self.test_labels, verbose=1, batch_size=batch_size)
+        # prepare iterator
+        train_iterator = train_datagen.flow(self.train_images, self.train_labels, batch_size=batch_size)
+        
+        
+        val_datagen = ImageDataGenerator(rescale=1.0/255.0,
+                                     # calculate mean and standard deviation on the training dataset
+                                     featurewise_center=True, 
+                                     featurewise_std_normalization=True,
+                                     )
+        val_datagen.fit(self.train_images)
+        val_iterator = val_datagen.flow(self.validation_images, self.validation_labels, batch_size=batch_size)
+    
+        
+                
+        storage_path = pathjoin(self.storage_path, '{}_{}_{}_{}.h5'.format(self.dataset, self.model_name, 'multilabel', self.dt))
+        
+        checkpoint = ModelCheckpoint(storage_path, 
+                                     monitor=self.monitor, 
+                                     verbose=1, 
+                                     save_best_only=True, 
+                                     save_weights_only=False, 
+                                     mode='auto', 
+                                     period=1)
+        
+        early = EarlyStopping(monitor=self.monitor, 
+                              min_delta=0, 
+                              patience=25, 
+                              verbose=1, 
+                              mode='auto')
+        
+        steps = int(self.train_images.shape[0] / batch_size)
+        history = self.model.fit(train_iterator,
+                                 steps_per_epoch=steps,
+                                 epochs=epochs,
+                                 #validation_data=val_iterator,
+                                 #callbacks=[checkpoint,early],
+                                 verbose=1)
+        
+        """self.model.evaluate(x=self.test_images, 
+                            y=self.test_labels, verbose=1, 
+                            batch_size=batch_size)"""
         
         return ntpath.basename(storage_path), history
         
@@ -127,6 +169,16 @@ class ml_cnn_classifier:
             eval_df = eval_df.append(pd.DataFrame([image_result], columns=eval_df.columns), ignore_index=True)
         
         return eval_df
+    
+    """
+    def evaluation(self):
+        datagen = ImageDataGenerator(featurewise_center=True, featurewise_std_normalization=True)
+        # calculate mean on training dataset
+        datagen.fit(self.train_images)
+        test_iterator = datagen.flow(testX, testY, batch_size=64)
+        _, acc = model.evaluate_generator(test_iterator, steps=len(test_iterator), verbose=0)
+        print('Test Accuracy: %.3f' % (acc * 100))
+    """
                 
                 
             
