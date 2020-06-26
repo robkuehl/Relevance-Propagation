@@ -13,6 +13,7 @@ import random
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
+from tensorflow_addons.metrics import HammingLoss
 
 from models.multilabel_cnn import ml_cnn_classifier
 from models.multiclass_cnn import mc_cnn_classifier
@@ -45,7 +46,7 @@ def ml_evaluate_config(model_name, dataset, final_activation, loss, classes, bat
         modelfile_name, history = classifier.run_model(batch_size=batch_size, epochs=epochs)
     eval_df = classifier.eval()
     
-    return eval_df, classifier
+    return eval_df, classifier, history 
     
     
     
@@ -154,14 +155,17 @@ if __name__ == '__main__':
     model_name='vgg16'
     dataset='pascal_voc_reshaped'
     final_activation='sigmoid'
+    #loss = HammingLoss(mode='multilabel', threshold=0.5)
+    
     loss= 'binary_crossentropy'
-    classes=['person', 'horse']
-    model_path = os.path.join(dirname, '..', 'models','cnn', 'pascal_voc_reshaped_vgg16_multilabel_21_06_2020-15.h5')
-    #model_path=None
-    batch_size = 5
-    epochs = 20
-    eval_df, classifier = ml_evaluate_config(model_name, dataset, final_activation, loss, classes, batch_size, epochs, model_path)
+    #classes=['person', 'horse']
+    classes=['cat', 'diningtable', 'dog', 'horse', 'sofa', 'tvmonitor', 'bottle', 'chair']
+    model_path = os.path.join(dirname, '..', 'models','cnn', 'Model3', 'pascal_voc_reshaped_vgg16_multilabel_24_06_2020-17.h5')
+    model_path=None
+    batch_size = 32
+    epochs = 500
+    eval_df, classifier, history = ml_evaluate_config(model_name, dataset, final_activation, loss, classes, batch_size, epochs, model_path)
     eps = 0.25
     gamma = 0.25
     
-    run_rel_prop(classifier, eps, gamma)
+    #run_rel_prop(classifier, eps, gamma)

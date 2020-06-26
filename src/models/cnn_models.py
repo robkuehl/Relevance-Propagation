@@ -1,5 +1,5 @@
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Conv2D, Flatten, MaxPooling2D, AveragePooling2D, BatchNormalization, Dropout
+from tensorflow.keras.layers import Dense, Conv2D, Flatten, MaxPooling2D, AveragePooling2D, BatchNormalization, Dropout, Activation
 from tensorflow.keras.applications.vgg16 import VGG16
 
 def get_model(model_name: str, input_shape: tuple, output_shape: int, final_activation: str):
@@ -36,11 +36,19 @@ def get_model(model_name: str, input_shape: tuple, output_shape: int, final_acti
         vgg16_model = VGG16()
         model = Sequential()
         for layer in vgg16_model.layers[:-1]:
-            model.add(layer)
-        for layer in model.layers:
             if type(layer) != Dense:
-                layer.trainable=False
-        model.add(Dense(output_shape, activation=final_activation))
+                model.add(layer)
+        for layer in model.layers:
+            layer.trainable=False
+        model.add(BatchNormalization())
+        model.add(Dense(2048, activation='relu'))
+        model.add(Dropout(0.4))
+        model.add(BatchNormalization())
+        model.add(Dense(1024, activation='relu'))
+        model.add(Dropout(0.25))
+        model.add(BatchNormalization())
+        model.add(Dense(output_shape))
+        model.add(Activation(final_activation))
         
       
     return model
