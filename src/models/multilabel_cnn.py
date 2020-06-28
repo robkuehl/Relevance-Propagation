@@ -62,8 +62,9 @@ class ml_cnn_classifier:
         
     
     def run_model(self, batch_size, epochs):
-        if self.model_path != None:
-            model.load_weights(self.model_path)
+        if self.model_path:
+            print('yes')
+            self.model.load_weights(self.model_path)
             return None, None
         else:
             pass
@@ -119,7 +120,7 @@ class ml_cnn_classifier:
         eval_df = pd.DataFrame(columns=['image', 'labels']+list(self.classes.values()))
         for i in range(self.test_images.shape[0]):
             image_name = self.test_labels_df.index[i]
-            image = self.test_images[i]
+            image = self.test_images[i]*1.0
             #model prediction
             prediction = self.model.predict(np.asarray([image], dtype=np.float64))[0]
             correct_labels = [self.classes[j] for j in range(self.test_labels[0].shape[0]) if self.test_labels[i][j]==1]
