@@ -20,11 +20,11 @@ from os.path import join as pathjoin
 
 from sklearn.model_selection import train_test_split
 
-from data.get_data import get_fashion_mnist, get_cifar10
-from data.get_voc_data import pascal_data_generator
-from models.cnn_models import get_model
+from src.data.get_data import get_fashion_mnist, get_cifar10
+from src.data.get_voc_data import pascal_data_generator
+from src.models.cnn_models import get_model
 #from models.custom_callback import CustomModelCheckpoint
-from models.custom_modelcheckpoint import ModelCheckpoint as CustomModelCheckpoint
+from src.models.custom_modelcheckpoint import ModelCheckpoint as CustomModelCheckpoint
 
 
 class ml_cnn_classifier:

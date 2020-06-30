@@ -18,13 +18,13 @@ import tensorflow as tf
 from datetime import datetime
 from pathlib import Path
 
-from models.multilabel_cnn import ml_cnn_classifier
+from src.models.multilabel_cnn import ml_cnn_classifier
 #from models.multiclass_cnn import mc_cnn_classifier
 #from rel_prop.rel_prop import rel_prop
 #from rel_prop.help_func import MidpointNormalize
 from contextlib import redirect_stdout
 
-from src.plotting.plot_funcs import plot_rel_prop
+#from src.plotting.plot_funcs import plot_rel_prop
 
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
@@ -220,9 +220,6 @@ def main_load_model(model_dir:Path):
 
     return classifier
 
-if __name__ == '__main__':
-    classifier = main_evaluate(i=2)
-    #classifier = main_load_model(os.path.join(dirname, '..', 'models', 'cnn', '27_06_2020-21-07'))
-    classifier.pred(10)
+    
             
 
