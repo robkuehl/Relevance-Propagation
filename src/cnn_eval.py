@@ -189,7 +189,8 @@ def main_evaluate(i:int):
     return classifier
 
 
-def main_load_model(model_dir:Path):
+def main_load_model(folder_name):
+    model_dir = os.path.join(dirname, '..', 'models', 'cnn', folder_name)
     with open(os.path.join(model_dir, 'classifier_config.pickle'), 'rb') as config_file:
         config = pickle.load(config_file)
     
