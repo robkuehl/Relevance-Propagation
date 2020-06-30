@@ -11,6 +11,7 @@ from sklearn.preprocessing import MultiLabelBinarizer
 import time
 from sklearn.model_selection import train_test_split
 from PIL import Image, ImageOps
+from sklearn.utils import shuffle
 
 class pascal_data_generator():
 
@@ -133,10 +134,28 @@ class pascal_data_generator():
             # choose only columns of the given classes
             # choose only rows where at least one label is 1
             rand_select_df = label_df[(label_df[classes]==np.zeros(len(classes))).all(axis=1)][classes]
-            label_df = label_df[(label_df[classes]!=np.zeros(len(classes))).any(axis=1)][classes]
-            label_df = label_df.append(rand_select_df.sample(int(label_df.shape[0]*0.5)))
+            new_label_df = label_df[(label_df[classes]!=np.zeros(len(classes))).any(axis=1)][classes]
+            try:
+                new_label_df = new_label_df.append(rand_select_df.sample(int(new_label_df.shape[0]*0.25)))
+            except ValueError:
+                new_label_df = label_df
+        else:
+            new_label_df = label_df
+                
+        # reduce labels to equal size for all classes
+        reduced_label_df = pd.DataFrame(columns=new_label_df.columns, dtype=np.float64)
+        cl_size = min(new_label_df.sum())
+        print('\nSize of classes:\n{}'.format(new_label_df.sum()))
+        for cl in list(new_label_df.columns):
+            sample_df = new_label_df[new_label_df[cl]==1].sample(cl_size)
+            reduced_label_df = pd.concat([reduced_label_df, sample_df])
             
-        return label_df
+        new_label_df = reduced_label_df
+        
+        
+        print('\nKlassen im Datensatz:\n{}'.format(new_label_df.sum()))
+            
+        return new_label_df
 
 
 
@@ -167,13 +186,6 @@ class pascal_data_generator():
         label_df = self.get_voc_labels(classes=classes)
         classes = list(label_df.columns)
         
-        if classes == ['person', 'horse']:
-            horse_and_person_df = label_df[(label_df==[1,1]).all(axis=1)]
-            horse_df = label_df[(label_df==[0,1]).all(axis=1)]
-            person_df = label_df[(label_df==[1,0]).all(axis=1)]
-            
-            new_person_df = person_df.sample(horse_df.shape[0])
-            label_df = pd.concat([horse_df, new_person_df, horse_and_person_df])
             
             
         images = self.get_voc_images(image_type=dataset[11:], label_df=label_df)

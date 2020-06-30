@@ -29,7 +29,7 @@ from models.custom_modelcheckpoint import ModelCheckpoint as CustomModelCheckpoi
 
 class ml_cnn_classifier:
     
-    def __init__(self, model_name:str, dataset:str, final_activation:str, loss:str, classes:list=None, model_path: str=None):
+    def __init__(self, model_name:str, dataset:str, final_activation:str, loss:str, storage_path:Path, classes:list=None, model_path: str=None):
         self.model_path = model_path
         self.model_name = model_name
         self.dataset = dataset 
@@ -56,7 +56,7 @@ class ml_cnn_classifier:
         self.test_labels_df = data['test_labels_df']
         self.test_labels = self.test_labels_df.values
         self.input_shape = self.train_images[0].shape
-        self.storage_path = pathjoin(os.path.dirname(__file__), '../../models/cnn/')
+        self.storage_path = storage_path
         self.output_shape = len(self.classes)
 
     
@@ -74,7 +74,7 @@ class ml_cnn_classifier:
     def run_model(self, batch_size, epochs):
         if self.model_path != None:
             self.model.load_weights(self.model_path)
-            return None, None
+            return 1
         else:
             pass
         # data augmentation
@@ -83,13 +83,13 @@ class ml_cnn_classifier:
         
         # create data generator
         datagen = ImageDataGenerator(preprocessing_function=preprocess_input,
-                                     #rotation_range=50.0,
-                                     #width_shift_range = 0.1,
-                                     #height_shift_range = 0.1,
+                                     rotation_range=50.0,
+                                     width_shift_range = 0.1,
+                                     height_shift_range = 0.1,
                                      #shear_range=0.1,
-                                     #zoom_range=0.1,
-                                     #horizontal_flip=True,
-                                     #vertical_flip = True
+                                     zoom_range=0.1,
+                                     horizontal_flip=True,
+                                     vertical_flip = True
                                      )
 
     
@@ -102,17 +102,16 @@ class ml_cnn_classifier:
         it_val = test_datagen.flow(self.validation_images, self.validation_labels, batch_size=batch_size)
         it_eval = test_datagen.flow(self.test_images, self.test_labels, batch_size=batch_size)
                 
-        dt = datetime.now().strftime('%d_%m_%Y-%H')
-        storage_path = pathjoin(self.storage_path, '{}_{}_{}_{}.h5'.format(self.dataset, self.model_name, 'multilabel', dt))
+        storage_path = pathjoin(self.storage_path, '{}_{}_{}.h5'.format(self.dataset, self.model_name, 'multilabel'))
         
         checkpoint = CustomModelCheckpoint(storage_path, verbose=1, save_best_only=True, save_weights_only=False, period=1, mode='max')
         early = EarlyStopping(monitor=self.monitor, min_delta=0, patience=25, verbose=1, mode='max')
         #history = self.model.fit(it_train, steps_per_epoch=steps, epochs=epochs, validation_data=it_val, validation_steps=val_steps, callbacks=[checkpoint,early], verbose=1)
-        history = self.model.fit(it_train, steps_per_epoch=steps, epochs=epochs, validation_data=it_val, validation_steps=val_steps, callbacks=[checkpoint], verbose=1)
+        self.history = self.model.fit(it_train, steps_per_epoch=steps, epochs=epochs, validation_data=it_val, validation_steps=val_steps, callbacks=[checkpoint], verbose=1)
         
         self.model.evaluate(it_eval, verbose=1, steps=int(self.test_images.shape[0]/batch_size))
         
-        return ntpath.basename(storage_path), history
+        return 1
         
 
     def pred(self, i):
