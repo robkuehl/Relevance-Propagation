@@ -7,3 +7,6 @@ VOCdevkit
 *checkpoint.ipynb
 *.7z
 *.gz
+*.txt
+model_history
+*.png

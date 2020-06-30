@@ -11,12 +11,13 @@ from sklearn.preprocessing import MultiLabelBinarizer
 import time
 from sklearn.model_selection import train_test_split
 from PIL import Image, ImageOps
+from sklearn.utils import shuffle
 
 class pascal_data_generator():
 
     def __init__(self, desired_size:int=224, override=False):
         dirname = os.path.dirname(__file__)
-        self.voc_path = os.path.join(dirname, '../../data/VOCdevkit/VOC2012')
+        self.voc_path = os.path.join(dirname, '../../../VOCdevkit/VOC2012')
         self.desired_size = desired_size
         self.override=override
 
@@ -58,8 +59,6 @@ class pascal_data_generator():
     def reshape_images(self):
         if not os.path.isdir(pathjoin(self.voc_path, 'JPEGImages_reshaped')):
             os.mkdir(pathjoin(self.voc_path, 'JPEGImages_reshaped'))
-        else:
-            pass
         
         for file in os.listdir(pathjoin(self.voc_path, 'JPEGImages')):
             if os.path.isfile(pathjoin(self.voc_path, 'JPEGImages_reshaped', file)) and self.override==False:
@@ -80,8 +79,6 @@ class pascal_data_generator():
     def images_to_numpy(self, image_type):
         if image_type == 'regular':
             source_path = pathjoin(self.voc_path, 'JPEGImages')
-        elif image_type == 'same_padded':
-            source_path = pathjoin(self.voc_path, 'JPEGImages_same_padded')
         elif image_type == 'zero_padded':
             self.zero_pad_images()
             source_path = pathjoin(self.voc_path, 'JPEGImages_zero_padded')
@@ -98,9 +95,7 @@ class pascal_data_generator():
             if 'jpg' not in file:
                 continue
             filename = os.path.splitext(file)[0]
-            if os.path.isfile(pathjoin(store_path, filename+'.pickle')):
-                pass
-            else:
+            if not os.path.isfile(pathjoin(store_path, filename+'.pickle')):
                 image_path = pathjoin(source_path, filename+'.jpg')
                 image = np.asarray(Image.open(image_path))
                 with open(pathjoin(store_path, filename+'.pickle'), 'wb') as file:
@@ -108,51 +103,59 @@ class pascal_data_generator():
 
 
     # Create the labels to the corresponding images from the xml files and store the labels as pickle as well
-                    
-    def labels_to_pickle(self):
-        if os.path.isfile(pathjoin(self.voc_path, 'labels.pickle')):
-            pass
+    # create a dataframe with binary labels
+
+    def get_voc_labels(self, classes):
+        if os.path.isfile(pathjoin(self.voc_path, 'label_df.pickle')):
+            label_df = pd.read_pickle(pathjoin(self.voc_path, 'label_df.pickle'))
         else:
             xml_path = pathjoin(self.voc_path, 'Annotations')
+            image_names = []
             labels = []
             for file in os.listdir(pathjoin(self.voc_path, 'JPEGImages')):
                 if 'jpg' not in file:
                     continue
                 tree = ElementTree.parse(pathjoin(xml_path, os.path.splitext(file)[0]+'.xml'))
                 root = tree.getroot()
-                labels.append(set([obj.find('name').text for obj in root.findall('.//object')]))
-            with open(pathjoin(self.voc_path, 'labels.pickle'), 'wb') as f:
-                pickle.dump(labels, f)
-                
-                
-                
-    # create a dataframe with binary labels
+                label = set([obj.find('name').text for obj in root.findall('.//object')])
+                labels.append(label)
+                image_names.append(os.path.splitext(file)[0])
 
-    def get_voc_labels(self, classes):
-        self.labels_to_pickle()
-        labels = []
-        image_names = []
-        for file in os.listdir(pathjoin(self.voc_path, 'JPEGImages')):
-            if 'jpg' not in file:
-                continue
-            image_names.append(os.path.splitext(file)[0])
+            mlb = MultiLabelBinarizer()
+
+            label_df = pd.DataFrame(mlb.fit_transform(labels),
+                            columns=mlb.classes_,
+                            index=image_names)
+            
+            
+            label_df.to_pickle(pathjoin(self.voc_path, 'label_df.pickle'))
+            
+        if len(classes)!=0:
+            # choose only columns of the given classes
+            # choose only rows where at least one label is 1
+            rand_select_df = label_df[(label_df[classes]==np.zeros(len(classes))).all(axis=1)][classes]
+            new_label_df = label_df[(label_df[classes]!=np.zeros(len(classes))).any(axis=1)][classes]
+            try:
+                new_label_df = new_label_df.append(rand_select_df.sample(int(new_label_df.shape[0]*0.25)))
+            except ValueError:
+                new_label_df = label_df
+        else:
+            new_label_df = label_df
                 
-        with open(pathjoin(self.voc_path, 'labels.pickle'), 'rb') as label_file:
-            labels = pickle.load(label_file)
-
-        #label_series = pd.Series(labels)
-
-        mlb = MultiLabelBinarizer()
-
-        label_df = pd.DataFrame(mlb.fit_transform(labels),
-                        columns=mlb.classes_,
-                        index=image_names)
+        # reduce labels to equal size for all classes
+        reduced_label_df = pd.DataFrame(columns=new_label_df.columns, dtype=np.float64)
+        cl_size = min(new_label_df.sum())
+        print('\nSize of classes:\n{}'.format(new_label_df.sum()))
+        for cl in list(new_label_df.columns):
+            sample_df = new_label_df[new_label_df[cl]==1].sample(cl_size)
+            reduced_label_df = pd.concat([reduced_label_df, sample_df])
+            
+        new_label_df = reduced_label_df
         
-        if classes == None or len(classes)==0:
-            classes = list(label_df.columns)
-        label_df = label_df[(label_df[classes]!=np.zeros(len(classes))).any(axis=1)][classes]
         
-        return label_df
+        print('\nKlassen im Datensatz:\n{}'.format(new_label_df.sum()))
+            
+        return new_label_df
 
 
 
@@ -160,15 +163,16 @@ class pascal_data_generator():
 
     def get_voc_images(self, image_type:str, label_df:pd.DataFrame):
         image_names = list(label_df.index)
+        
         if image_type == 'regular':
             source_path = pathjoin(self.voc_path, 'JPEGImages', 'Images_as_pickle')
-        elif image_type == 'same_padded':
-            source_path = pathjoin(self.voc_path, 'JPEGImages_same_padded', 'Images_as_pickle')
         elif image_type == 'zero_padded':
             source_path = pathjoin(self.voc_path, 'JPEGImages_zero_padded', 'Images_as_pickle')
         elif image_type == 'reshaped':
             source_path = pathjoin(self.voc_path, 'JPEGImages_reshaped', 'Images_as_pickle')
+        
         self.images_to_numpy(image_type)
+        
         images = []
         for file in image_names:
             image_path = pathjoin(source_path, file+'.pickle')
@@ -181,17 +185,13 @@ class pascal_data_generator():
     def get_training_data(self, classes, dataset):
 
         label_df = self.get_voc_labels(classes=classes)
-        if classes == ['person', 'horse']:
-            horse_and_person_df = label_df[(label_df==[1,1]).all(axis=1)]
-            horse_df = label_df[(label_df==[0,1]).all(axis=1)]
-            person_df = label_df[(label_df==[1,0]).all(axis=1)]
+        classes = list(label_df.columns)
+        
             
-            new_person_df = person_df.sample(horse_df.shape[0])
-            label_df = pd.concat([horse_df, new_person_df, horse_and_person_df])
             
         images = self.get_voc_images(image_type=dataset[11:], label_df=label_df)
         
-        train_images, test_images, train_labels_df, test_labels_df = train_test_split(images, label_df, test_size=0.2, random_state=42)
+        train_images, test_images, train_labels_df, test_labels_df = train_test_split(images, label_df, test_size=0.1, random_state=42)
         
         data = {'train_images': train_images,
                     'train_labels_df': train_labels_df,
