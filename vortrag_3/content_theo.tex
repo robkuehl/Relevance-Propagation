@@ -1,0 +1,66 @@
+\section{Herleitung zweier z-Regeln}
+\frame{\sectionpage}
+\begin{frame}{$z^+$-Regel}
+\begin{itemize}
+\item Grundannahme der Deep Taylor Decomposition ist die Anwendung der ReLU-Aktivierungsfunktion. \\
+$\Rightarrow$ für Input eines Layers gilt $\bx \in \mathbb{R}_+^d$ \\
+$\Rightarrow$ zulässige Nullstelle sollte auch aus zulässigem Bereich kommen 
+\item Gesucht wird Nullstelle für $R_j$ auf dem Intervall $[ \{x_i \mathds{1}_{w_{ij} < 0}\}, \{x_i\}]$
+\item Mindestens eine Nullstelle existiert bei $\{x_i 1_{w_{ij} < 0}\}$
+\end{itemize}
+\end{frame}
+
+\begin{frame}{$z^+$-Regel}
+\begin{itemize}
+\item Wähle $v_i^{(j)} = x_i - x_i \cdot \mathds{1}_{w_{ij} \leq 0} = x_i \cdot \mathds{1}_{w_{ij} > 0}$
+\item Einsetzen in die Gleichung liefert:
+\begin{equation*}
+R_i = \sum_{j} \frac{x_i \mathds{1}_{w_{ij} > 0} w_{i j}}{\sum_{i} x_i \mathds{1}_{w_{ij} > 0} w_{i j}} R_j^{l+1} = \sum_{j} \frac{z_{ij}^{+}}{\sum_{i} z_{ij}^{+}} R_j^{l+1}
+\end{equation*}
+\item Mit $z_{ij} = x_i \cdot w_{ij}$
+\end{itemize}
+\end{frame}
+
+\begin{frame}{$z^B$-Regel}
+\begin{itemize}
+\item Für Inputwerte des ersten Layers (z.B. Pixelwerte) gilt Positivität i.A. nicht 
+\item Diese sind meistens beschränkt und können auch Werte kleiner 0 annehmen
+\item Formal: $x \in \mathcal{B}$ mit\\
+\begin{equation*}
+\mathcal{B} = \{x \in \mathbb{R}^d: l_i \leq x_i \leq h_i \quad \forall i \in \{0, ..., d\}\},
+\end{equation*}
+wobei $l_i \leq 0$ und $h_i \geq 0$
+\end{itemize}
+\end{frame}
+
+\begin{frame}{$z^B$-Regel}
+\begin{itemize}
+\item Gesucht wird Nullstelle für $R_j $ auf dem Intervall \\
+\begin{equation*}
+\left[\{l_i \mathds{1}_{w_{ij} > 0} + h_i \mathds{1}_{w_{ij} < 0}\}, \{x_i\}\right]
+\end{equation*}
+\item Auf diesem Intervall existiert mindestens eine Nullstelle, denn
+\begin{align*}
+&R_j\left(\{l_i \mathds{1}_{w_{ij} > 0} + h_i \mathds{1}_{w_{ij} < 0}\}\right) \\
+&= \text{max} \left(0, \sum_i l_i \mathds{1}_{w_{ij} > 0} \cdot w_{ij} + h_i \mathds{1}_{w_{ij} < 0} \cdot w_{ij} + b_j \right) \\
+&= \text{max} \left(0, \sum_i l_i \cdot w_{ij}^+ + h_i \cdot w_{ij}^- + b_j \right) = 0
+\end{align*}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{$z^B$-Regel}
+\begin{itemize}
+\item Dieses Intervall ist also für die Suche zulässig und wir fügen die Richtung $v_i^{(j)}$, mit
+\begin{equation*}
+v_{i}^{(j)} = x_i - l_i \mathds{1}_{w_{ij} > 0} - h_i \mathds{1}_{w_{ij} < 0},
+\end{equation*}
+\item in die Grundformel
+\begin{equation*}
+\sum_{j} \frac{v_{i}^{(j)} w_{i j}}{\sum_{i} v_{i}^{(j)} w_{i j}} R_{j}
+\end{equation*}
+\item ein und erhalten unsere finale $z^{\mathcal{B}}$-Regel
+\begin{equation*}
+R_{i}=\sum_{j} \frac{z_{i j}-l_{i} w_{i j}^{+}-h_{i} w_{i j}^{-}}{\sum_{i} z_{i j}-l_{i} w_{i j}^{+}-h_{i} w_{i j}^{-}} R_{j}
+\end{equation*}
+\end{itemize}
+\end{frame}

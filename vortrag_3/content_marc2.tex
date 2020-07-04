@@ -1,0 +1,109 @@
+\section{Deep Taylor Decomposition}
+\frame{\sectionpage}
+\begin{frame}{Erweiterung auf tiefe Netze}
+\begin{itemize}
+\item Bei tiefen Netzen, insbesondere Convolutional Layern ist die Relevanzfunktion nicht unbedingt explizit angegeben.
+\end{itemize}
+\vspace*{20pt}
+\begin{minipage}{0.42\textwidth}
+\includegraphics[width=\textwidth]{grafiken_marc/simple_net.png}
+\end{minipage}
+\begin{minipage}{0.52\textwidth}
+\includegraphics[width=\textwidth]{grafiken_marc/DNN.png}
+\end{minipage}
+\vspace*{10pt}
+\begin{itemize}
+\item Ein Feature kann vorhanden sein, aber bei der Bilderkennung keine Rolle spielen
+\end{itemize}
+\footnote{Grafik entnommen aus \ref{itm:Mont17}}
+\end{frame}
+
+\begin{frame}{Erweiterung auf tiefe Netze}
+\begin{itemize}
+\item Gesucht ist eine Approximation der Relevanz Funktion, die leicht zu analysieren ist.
+\item Führe das Konzept \textbf{Relevanz-Modell} ein, um bei tieferen Netzen die Relevanzfunktion $R_j^{l+1}(\bx^{l})$ zu approximieren.
+\item Nehme an, die Relevanzfunktion $R_j$ lässt sich in der Form $R_j = x_j \cdot c_j$ schreiben, wobei $c_j$ konstant ist.
+\item Im Paper als "{}Training Free"{} Ansatz vorgestellt
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Erweiterung auf tiefe Netze}
+\begin{itemize}
+\item Nehme an, die Relevanzfunktion $R_j$ lässt sich in der Form $R_j = x_j \cdot c_j$ schreiben, mit $c_j$ konstant.
+\item Betrachte die generische Redistributionsregel
+\begin{align*}
+R_i &= \sum_{j} \frac{x_{i} \cdot \rho(w_{i j})}{\sum_{i} x_{i} \cdot \rho(w_{i j})} R_{j}\\
+& = x_{i} \sum_{j}  \frac{ \rho(w_{i j})}{\sum_{i} x_{i} \cdot \rho(w_{i j})} x_j \cdot c_j \\
+&= x_i \sum_{j}   \rho(w_{i j}) \frac{\max \left(0, \sum_{i} x_{i} w_{i j}\right)}{\sum_{i} x_{i} \cdot \rho(w_{i j})} c_j
+\end{align*}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Erweiterung auf tiefe Netze}
+\begin{itemize}
+\item Nehme an, die Relevanzfunktion $R_j$ lässt sich in der Form $R_j = x_j \cdot c_j$ schreiben, mit $c_j$ konstant.
+\item Betrachte die generische Redistributionsregel
+\begin{align*}
+R_i &= \sum_{j} \frac{x_{i} \cdot \rho(w_{i j})}{\sum_{i} x_{i} \cdot \rho(w_{i j})} R_{j}\\
+& = x_{i} \sum_{j}  \frac{ \rho(w_{i j})}{\sum_{i} x_{i} \cdot \rho(w_{i j})} x_j \cdot c_j \\
+&= x_i \underbrace{\sum_{j}   \rho(w_{i j}) \frac{\max \left(0, \sum_{i} x_{i} w_{i j}\right)}{\sum_{i} x_{i} \cdot \rho(w_{i j})} c_j}_{\colonapprox c_i}
+\end{align*}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Erweiterung auf tiefe Netze}
+\begin{itemize}
+\item Es gilt also
+\begin{align*}
+R_i = x_i \underbrace{\sum_{j}   \rho(w_{i j}) \frac{\max \left(0, \sum_{i} x_{i} w_{i j}\right)}{\sum_{i} x_{i} \cdot \rho(w_{i j})} c_j}_{\colonapprox c_i} = \sum_{j}    \frac{\rho(w_{i j}) \cdot x_i}{\sum_{i} x_{i} \cdot \rho(w_{i j})} R_j
+\end{align*}
+\item D.h. $R_i^l$ lässt sich wieder schreiben als $x_i^l \cdot c_i^l$, mit $c_i^l$ annähernd konstant.
+\item Ausgehend von der letzten Schicht kann die Relevanz somit auch gemäß der hergeleiteten Regeln zurück zum Input verteilt werden.
+\item Der Parameter $c_i^l$ wird dabei durch die betrachtete Regel "{}induktiv"{} gebildet.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Zusammenhang mit LRP}
+\begin{itemize}
+\item Die klassische $LRP-0$ Formel kann als Deep Taylor Entwicklung im Nullpunkt gesehen werden
+\item Betrachte O.B.d.A. ein Neuron $x_j$ mit $R_j > 0$. 
+\item Die Suchrichtung $\bv$ ist hierbei der Punkt $\bx$ selbst, und somit gilt:
+\pause
+\begin{align*}
+R_{i \leftarrow j}^l &=\frac{\partial R_{j}^{l+1}}{\partial x_{i}^l}
+(x_i - \tilde{x_i})  = w_{ij} \cdot c_j \cdot (x_i - \tilde{x_i}) \\
+&= w_{ij} \cdot c_j \cdot \frac{\sum_{i} x_{i} w_{i j}+b_{j}}{\sum_{i} x_{i} w_{i j}} x_i\\
+&= \frac{x_i \cdot w_{ij}}{\sum_{i} x_{i} w_{i j}} x_j \cdot c_j
+\end{align*}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Zusammenhang mit LRP}
+\begin{itemize}
+\item Die klassische $LRP-0$ Formel kann als Deep Taylor Entwicklung im Nullpunkt gesehen werden
+\item Betrachte O.B.d.A. ein Neuron $x_j^{l+1}$ mit $R_j > 0$. 
+\item Die Suchrichtung $\bv$ ist hierbei der Punkt $\bx$ selbst, und somit gilt:
+\begin{align*}
+R_{i \leftarrow j}^l &=\frac{\partial R_{j}^{l+1}}{\partial x_{i}^l}
+(x_i - \tilde{x_i})  = w_{ij} \cdot c_j \cdot (x_i - \tilde{x_i}) \\
+&= w_{ij} \cdot c_j \cdot \frac{\sum_{i} x_{i} w_{i j}+b_{j}}{\sum_{i} x_{i} w_{i j}} x_i\\
+&= \frac{x_i \cdot w_{ij}}{\sum_{i} x_{i} w_{i j}} \underbrace{ x_j \cdot c_j}_{ R_j }
+\end{align*}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Zusammenhang mit LRP}
+\begin{itemize}
+\item Für die totale Relevanz von $x_i$ gilt:
+
+\begin{align*}
+R_i^l = \sum_{j} R_{i \leftarrow j}^l &= \sum_{j} \frac{x_i \cdot w_{ij}}{\sum_{i} x_{i} w_{i j}} R_j^{l+1} = \sum_{j} \frac{z_{ij}}{\sum_{i} z_{i j}} R_j^{l+1}
+\end{align*}
+\item Mit der gleichen Vorgehensweise können auch die $LRP-\varepsilon$ Regel sowie $LRP-\gamma$ hergeleitet werden.
+\item Deep Taylor Decomposition als Basis für \textit{LRP}
+\item Wesentlicher Unterschied: Geforderte Konsistenz von Montavon et al. im Vergleich zu den \textit{LRP} Regeln
+\end{itemize}
+\end{frame}
+

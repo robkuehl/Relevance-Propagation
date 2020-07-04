@@ -1,0 +1,29 @@
+\section{Ergebnisse auf Pascal-Datensatz}
+\frame{\sectionpage}
+\begin{frame}{Anwendung auf den Pascal-Datensatz}
+\begin{itemize}
+\item VGG16 trainiert für Multilabel-Klassifizierung für die Klassen \textit{Mensch} und \textit{Pferd}
+\item $z^{\mathcal{B}}$-Regel wurde bei Anwendung aller Regeln für das Inputlayer verwendet
+\item LRP-Composition:
+\begin{itemize}
+\item LRP-0 auf Dense-Layern
+\item LRP-$\epsilon$ auf mittleren sechs Conv-Layern
+\item LRP-$\gamma$ auf den letzten sechs Conv-Layern vor Inputlayer
+\end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Visualisierungen der bisher vorgestellten Regeln}
+\begin{itemize}
+\item Erklärung für das Erkennen des Labels \textit{Pferd}
+\end{itemize}
+\includegraphics[width = 0.85\textwidth]{grafiken_theo/pascal_pferd.png}
+\end{frame}
+
+\begin{frame}{Visualisierungen der bisher vorgestellten Regeln}
+\begin{itemize}
+\item Erklärung für das Erkennen des Labels \textit{Mensch}
+\end{itemize}
+\includegraphics[width = 0.85\textwidth]{grafiken_theo/pascal_mensch.png}
+\end{frame}
+

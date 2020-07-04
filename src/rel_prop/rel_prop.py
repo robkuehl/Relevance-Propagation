@@ -1,9 +1,68 @@
-import copy
+import time
 
 import tensorflow as tf
 import numpy as np
 from tensorflow.keras.models import Sequential
-import sys
+
+from src.plotting.plot_funcs import plot_rel_prop
+
+
+def run_rel_prop(classifier, eps, gamma, index):
+    # index = random.randint(0, classifier.test_images.shape[0])
+    model = classifier.model
+    print(len(classifier.test_images))
+    image = classifier.test_images[index]*1.0
+    label = classifier.test_labels[index]
+    dataset = 'pascal_test'
+
+    prediction = model.predict(np.asarray([image]))[0]
+
+    timestamp = time.strftime('%d-%m_%Hh%M')
+
+    label_indices = np.arange(0,len(label))[label == 1]
+    for idx in label_indices:
+
+        titles = []
+        relevances = []
+
+        persist_string = f'{dataset}_{index}_{timestamp}_class_{idx}'
+
+        img = np.array([image])
+        mask = np.zeros(len(label), dtype=np.dtype(float))
+        mask[idx] = 1.
+
+        if np.max(mask - prediction) > 1e-01:
+            continue
+        mask = tf.constant(mask, dtype=tf.float32)
+
+        # LRP-0
+        titles.append('LRP-0')
+        relevance = rel_prop(model, img, mask)
+        relevances.append(relevance)
+
+        # LRP-eps
+        titles.append(f'LRP-ε (ε={eps} * std)')
+        relevance = rel_prop(model, img, mask, eps=eps)
+        relevances.append(relevance)
+
+        # LRP-gamma
+        titles.append(f'LRP-γ (γ={gamma})')
+        relevance = rel_prop(model, img, mask, gamma=gamma)
+        relevances.append(relevance)
+
+        # LRP-composite
+        titles.append(f'LRP-Composite \neps = {2*eps}\ngamma = {2*gamma}')
+        relevance = rel_prop(model, img, mask, eps=2*eps, gamma=2*gamma, comb=True)
+        relevances.append(relevance)
+
+        # z+
+        titles.append('z+')
+        relevance = rel_prop(model, img, mask, z_pos=True)
+        relevances.append(relevance)
+
+        relevances = tuple(zip(titles, relevances))
+
+        plot_rel_prop(image, relevances, persist_string, False)
 
 
 def rel_prop(model: tf.keras.Sequential, image: np.ndarray, mask: np.ndarray, eps: float = 0, gamma: float = 0,
@@ -24,7 +83,6 @@ def rel_prop(model: tf.keras.Sequential, image: np.ndarray, mask: np.ndarray, ep
 
     new_model = tf.keras.models.clone_model(model)
     new_model.pop()
-    new_model.add(tf.keras.layers.Dense(2))
     new_model.set_weights(model.get_weights())
 
     # Schichten des Modells werden in Array gespeichert
@@ -34,6 +92,13 @@ def rel_prop(model: tf.keras.Sequential, image: np.ndarray, mask: np.ndarray, ep
     outputs = [image]
     for i, layer in enumerate(layers):
         output = layer(outputs[i])
+
+        # Auf letzten output soll keine ReLU angewandt werden
+        if i < len(layers) - 1 and \
+                (isinstance(layer, tf.keras.layers.Conv2D) or isinstance(layer, tf.keras.layers.Dense)):
+
+            output = tf.keras.activations.relu(output)
+
         outputs.append(output)
 
     # Anzahl der Schichten
@@ -60,7 +125,7 @@ def rel_prop(model: tf.keras.Sequential, image: np.ndarray, mask: np.ndarray, ep
 
         # Wenn Layer zulässige Schicht ist (keine Aktivierungsfunktion o.ä., berechne R[l])
         if isinstance(layer, (tf.keras.layers.Conv2D, tf.keras.layers.Dense, tf.keras.layers.AvgPool2D,
-                              tf.keras.layers.Flatten)):
+                              tf.keras.layers.Flatten, tf.keras.layers.BatchNormalization)):
             R[l] = calc_r(R_old, output, layer, l, eps, gamma, z_pos, comb, output_layer_bool)
         else:
             R[l] = R_old

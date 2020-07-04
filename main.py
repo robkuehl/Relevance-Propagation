@@ -1,6 +1,10 @@
-from src.cnn_eval import main_evaluate, main_load_model
-import tensorflow as tf
 import random
+
+import tensorflow as tf
+import numpy as np
+
+from src.cnn_eval import main_evaluate, main_load_model
+from src.rel_prop.rel_prop import run_rel_prop
 
 gpu_used = False
 
@@ -38,4 +42,8 @@ test_images = classifier.test_images
 test_labels_df = classifier.test_labels_df
 test_labels = test_labels_df.values
 index = random.randint(0, test_labels.shape[0])
-classifier.pred(index)
+
+for index in np.random.randint(0, test_labels.shape[0], 20):
+# for index in [372]:
+    classifier.pred(index)
+    run_rel_prop(classifier, eps=0.4, gamma=0.4, index=index)

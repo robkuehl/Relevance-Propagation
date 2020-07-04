@@ -1,0 +1,55 @@
+\section{Implementierung eines CNN für den Pascal VOC}
+\frame{\sectionpage}
+\begin{frame}{Das VGG-Modell}
+\includegraphics[scale=0.3]{./grafiken_robin/vgg16.png}
+\end{frame}
+
+\begin{frame}{Finetuning}
+Wir entfernen die Dense Layer aus dem bereits trainierten VGG16 und trainieren diese neu\\
+\vspace*{0.5cm}
+\includegraphics[scale=0.4]{./grafiken_robin/finetuning.png}
+\end{frame}
+
+\begin{frame}{Regularisierung}
+\begin{itemize}
+\item Hier besoners wichtig weil: 
+\begin{enumerate}
+\item der Datensatz klein ist
+\item die Klassen ungleich viele Bilder enthalten
+\end{enumerate}
+\item Methoden:
+\begin{enumerate}
+\item Dropout
+\item BatchNormalization
+\item Data Augmentation
+\item Sample anderer Klassen
+\end{enumerate}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Sample anderer Klassen}
+\begin{itemize}
+\item Ein NN muss lernen, was zu einer Klasse gehört und was nicht
+\item Problem: Falsche Entscheidungen für eine Klasse anhand von Merkmalen die häufig mit dieser Klasse auftreten
+\item Idee: Hinzufügen von Bildern, die keine der zu trainierenden Klassen enhalten
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Ein eigener Model Checkpoint}
+\begin{itemize}
+\item Idee: Speichere das Model nicht zum Zeitpunkt minimalen Fehlers sondern anhand spezieller Metriken
+\begin{enumerate}
+\item Precision: 
+\begin{align*}
+&\frac{true\_positives}{true\_positives + false\_positives}\\
+&\text{Welcher Anteil positiv vorhergesagter Label war korrekt?}
+\end{align*}
+\item Recall:
+\begin{align*}
+&\frac{true\_positives}{true\_positives + false\_negatives}\\
+&\text{Welcher Anteil positiver Label wurde korrekt vorhergesagt?}
+\end{align*}
+\end{enumerate}
+\end{itemize}
+\end{frame}
+

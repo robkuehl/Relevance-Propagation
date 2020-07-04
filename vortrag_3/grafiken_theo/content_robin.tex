@@ -1,0 +1,118 @@
+\section{Implementierung eines CNN für den Pascal VOC}
+\begin{frame}{Implementierung eines CNN für den Pascal VOC}
+\begin{enumerate}
+\item Das VGG-Modell
+\item Finetuning
+\item Regularisierung
+\item Ein eigener Model Checkpoint
+\item Vergleich von Ergebnissen
+\end{enumerate}
+\end{frame}
+
+\begin{frame}{Das VGG-Modell}
+\includegraphics[scale=0.3]{./grafiken_robin/vgg16.png}
+\end{frame}
+
+\begin{frame}{Finetuning}
+Wir entfernen die Dense Layer aus dem bereits trainierten VGG16 und trainieren diese neu\\
+\vspace*{0.5cm}
+\includegraphics[scale=0.4]{./grafiken_robin/finetuning.png}
+\end{frame}
+
+\begin{frame}{Regularisierung}
+\begin{itemize}
+\item Hier besoners wichtig weil: 
+\begin{enumerate}
+\item der Datensatz klein ist
+\item die Klassen ungleich viele Bilder enthalten
+\end{enumerate}
+\item Methoden:
+\begin{enumerate}
+\item Dropout
+\item BatchNormalization
+\item Data Augmentation
+\item Sample anderer Klassen
+\end{enumerate}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Regularisierung}
+\begin{itemize}
+\item Data Augmentation
+\begin{itemize}
+\item Idee: Erweitern des Datensatzes um Generalisierungseigenschatfen und Performance des NN zu verbessern
+\item Umsetzung: Zufällige Modifzierzungen der Bilder im Datenstrom zur Laufzeit
+\item Implmentierung: mittels der Klasse ImageDataGenerator von Keras
+\end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Regularisierung}
+\begin{itemize}
+\item Data Augmentation
+\begin{itemize}
+\item Beispiele:
+\end{itemize}
+\end{itemize}
+\begin{figure}
+\stackunder[5pt]{\includegraphics[scale=0.3]{./grafiken_robin/horizontal_flip.png}}{Horizontal Flip}%
+\hspace{1cm}%
+\stackunder[5pt]{\includegraphics[scale=0.3]{./grafiken_robin/brightness.png}}{Brightness Range}
+\caption{}
+\end{figure}
+\footnote{Quelle: https://machinelearningmastery.com/how-to-configure-image-data-augmentation-when-training-deep-learning-neural-networks/}
+\end{frame}
+
+\begin{frame}{Sample anderer Klasses}
+\begin{itemize}
+\item Ein NN muss lerenen was zu einer Klasse gehört und was nicht
+\item Problem: Falsche Entscheidungen für eine Klasse anhand von Merkmalen die Häufig mit dieser Klasse auftreten
+\item Idee: Hinzufügen von Bildern die keine der zu trainierenden Klassen enhalten
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Ein eigener Model Checkpoint}
+\begin{itemize}
+\item Idee: Speichere das Model nicht zum Zeitpunkt minimalen Fehlers sondern anhand spezieller Metriken
+\begin{enumerate}
+\item Precision: 
+\begin{align*}
+&\frac{true\_positives}{true\_positives + false\_positives}\\
+&\text{Welcher Anteil positiv vorhergesagter Label war korrekt?}
+\end{align*}
+\item Recall:
+\begin{align*}
+&\frac{true\_positives}{true\_positives + false\_negatives}\\
+&\text{Welcher Anteil positiver Label wurde korrekt vorhergesagt?}
+\end{align*}
+\end{enumerate}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Ein eigener Model Checkpoint}
+\begin{itemize}
+\item Ziel: beide möglichst groß mit ähnlicher Größenordnung
+\item Implementierung: Speichere das Modell falls
+\begin{enumerate}
+\item mind. eine Metrik sich verbessert hat wärend die andere nicht schlechter geworden ist
+\item die Metriken im Mittel besser geworden sind und ihr Abstand sich verringert hat
+\end{enumerate}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Vergleich der Ergebnisse}
+\begin{itemize}
+\item Das Modell für 2 Klassen
+\item Klassen = Person, Pferd
+\includegraphics[scale=0.06]{./grafiken_robin/person_horse_plots.png}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Vergleich der Ergebnisse}
+\begin{itemize}
+\item Das Model für 5 Klassen
+\item Klassen = Katze, Esstisch, Person, Flugzeug, Flasche
+\includegraphics[scale=0.06]{./grafiken_robin/several_classes_plots.png}
+\end{itemize}
+\end{frame}
+

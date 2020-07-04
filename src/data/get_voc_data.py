@@ -136,7 +136,8 @@ class pascal_data_generator():
             rand_select_df = label_df[(label_df[classes]==np.zeros(len(classes))).all(axis=1)][classes]
             new_label_df = label_df[(label_df[classes]!=np.zeros(len(classes))).any(axis=1)][classes]
             try:
-                new_label_df = new_label_df.append(rand_select_df.sample(int(new_label_df.shape[0]*0.25)))
+                new_label_df = new_label_df.append(rand_select_df.sample(int(new_label_df.shape[0]*0.25),
+                                                                         random_state=42))
             except ValueError:
                 new_label_df = label_df
         else:
@@ -147,7 +148,7 @@ class pascal_data_generator():
         cl_size = min(new_label_df.sum())
         print('\nSize of classes:\n{}'.format(new_label_df.sum()))
         for cl in list(new_label_df.columns):
-            sample_df = new_label_df[new_label_df[cl]==1].sample(cl_size)
+            sample_df = new_label_df[new_label_df[cl]==1].sample(cl_size, random_state=42)
             reduced_label_df = pd.concat([reduced_label_df, sample_df])
             
         new_label_df = reduced_label_df

@@ -118,8 +118,8 @@ class ml_cnn_classifier:
         
         image = self.test_images[i]
         prediction = self.model.predict(np.asarray([preprocess_input(image)], dtype=np.float64))
-        plt.imshow(Image.fromarray(np.uint8(image)))
-        plt.show()
+        # plt.imshow(Image.fromarray(np.uint8(image)))
+        # plt.show()
         correct_labels = [self.classes[j] for j in range(self.test_labels[0].shape[0]) if self.test_labels[i][j]==1]
         print('Correct Label: {}\n'.format(correct_labels))
         for i in range(len(self.classes)):
@@ -150,11 +150,3 @@ class ml_cnn_classifier:
             eval_df = eval_df.append(pd.DataFrame([image_result], columns=eval_df.columns), ignore_index=True)
         
         return eval_df
-                
-                
-            
-        
-            
-            
-        
-            
