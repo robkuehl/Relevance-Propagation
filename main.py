@@ -44,6 +44,6 @@ test_labels = test_labels_df.values
 index = random.randint(0, test_labels.shape[0])
 
 for index in np.random.randint(0, test_labels.shape[0], 20):
-# for index in [372]:
-    classifier.pred(index)
-    run_rel_prop(classifier, eps=0.4, gamma=0.4, index=index)
+# for index in [454]:
+    prediction = classifier.pred(index)
+    run_rel_prop(classifier, eps=0.4, gamma=0.4, index=index, prediction=prediction)

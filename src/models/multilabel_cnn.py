@@ -129,6 +129,7 @@ class ml_cnn_classifier:
             if prediction[0][j] >0.5:
                 print('\t{} with {}%'.format(self.classes[j], prediction[0][j]*100))
         print("\n\n\n")
+        return prediction
     
     """
     def print_train_image(self, i):

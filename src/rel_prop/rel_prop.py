@@ -3,19 +3,18 @@ import time
 import tensorflow as tf
 import numpy as np
 from tensorflow.keras.models import Sequential
+from tensorflow.keras.applications.vgg16 import preprocess_input
 
 from src.plotting.plot_funcs import plot_rel_prop
 
 
-def run_rel_prop(classifier, eps, gamma, index):
+def run_rel_prop(classifier, eps, gamma, index, prediction):
     # index = random.randint(0, classifier.test_images.shape[0])
     model = classifier.model
     print(len(classifier.test_images))
     image = classifier.test_images[index]*1.0
     label = classifier.test_labels[index]
     dataset = 'pascal_test'
-
-    prediction = model.predict(np.asarray([image]))[0]
 
     timestamp = time.strftime('%d-%m_%Hh%M')
 
@@ -32,6 +31,7 @@ def run_rel_prop(classifier, eps, gamma, index):
         mask[idx] = 1.
 
         if np.max(mask - prediction) > 1e-01:
+            tmp = mask-prediction
             continue
         mask = tf.constant(mask, dtype=tf.float32)
 
@@ -78,9 +78,10 @@ def rel_prop(model: tf.keras.Sequential, image: np.ndarray, mask: np.ndarray, ep
     :return: Werte der Relevance Propagation im Eingabeformat des Bildes (Ready2Plot)
     """
 
+    image = preprocess_input(image.copy())
+
     # Kopie des Models wird angefertigt, damit Gewichte durch Funktion forward() nicht für nachfolgende Anwendungen verändert
     # werden. Letzte Aktivierung (Sigmoid) wird gelöscht.
-
     new_model = tf.keras.models.clone_model(model)
     new_model.pop()
     new_model.set_weights(model.get_weights())
@@ -217,6 +218,7 @@ def z_b(R: np.ndarray, prev_output: np.ndarray, layer, ) -> np.ndarray:
     # Output der vorherigen Schicht wird in TF-Konstante transformiert
     prev_output = tf.constant(prev_output)
     low_bound = tf.constant(np.zeros(prev_output.shape))
+
     high_bound = tf.constant(np.ones(prev_output.shape) * 255.)
 
     # GradientTape wird aufgezeichnet
