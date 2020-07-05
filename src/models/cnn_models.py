@@ -41,13 +41,13 @@ def get_model(model_name: str, input_shape: tuple, output_shape: int, final_acti
                 model.add(layer)
         for layer in model.layers:
             layer.trainable=False
-        model.add(BatchNormalization())
+        #model.add(BatchNormalization())
         model.add(Dense(4096, activation='relu'))
         model.add(Dropout(0.25))
-        model.add(BatchNormalization())
+        #model.add(BatchNormalization())
         model.add(Dense(2048, activation='relu'))
         model.add(Dropout(0.25))
-        model.add(BatchNormalization())
+        #model.add(BatchNormalization())
         model.add(Dense(output_shape))
         model.add(Activation(final_activation))
         
