@@ -13,9 +13,11 @@ def plotly_mnist_image(image):
     fig.show()
 
 
-def plot_rel_prop(image: np.ndarray, relevances: Tuple, persist_string: str, show: bool = False):
+def plot_rel_prop(image: np.ndarray, correct_label: str, relevances: Tuple, persist_string: str, show: bool = False):
     num_pics = len(relevances)
     n_col = int((num_pics + 1)/2 + 0.5)
+
+    plt.suptitle(f'Erklärung für die Klassifizierung: {correct_label}')
 
     plt.subplot(2, n_col, 1)
     plt.title('Input')
@@ -23,12 +25,18 @@ def plot_rel_prop(image: np.ndarray, relevances: Tuple, persist_string: str, sho
     fig.axes.get_xaxis().set_visible(False)
     fig.axes.get_yaxis().set_visible(False)
 
+    vals = np.array([val[1] for val in relevances])
+    rel_max = vals.max()
+    rel_min = vals.min()
+
     for i in range(0, num_pics):
         plt.subplot(2, n_col, i+2)
         relevance = relevances[i][1][0]
-        fig = plt.imshow(relevance, cmap='seismic',
-                         norm=MidpointNormalize(midpoint=0, vmin=relevance.min(), vmax=relevance.max()))
 
+        fig = plt.imshow(relevance, cmap='seismic',
+                         norm=MidpointNormalize(midpoint=0, vmin=rel_min, vmax=rel_max))
+
+        plt.colorbar(fig)
         plt.tick_params(
             axis='x',  # changes apply to the x-axis
             which='both',  # both major and minor ticks are affected
@@ -50,4 +58,39 @@ def plot_rel_prop(image: np.ndarray, relevances: Tuple, persist_string: str, sho
         plt.cla()
         plt.clf()
     else:
+
         plt.show()
+
+
+def plot_R_evo(evolutions_of_R: tuple, persist_string: str, show: bool, y_min: int = 0, y_max: int = 1.1):
+    x = np.arange(len(evolutions_of_R[0][1]), 0, -1)
+
+    num_pics = len(evolutions_of_R)
+    n_col = int((num_pics + 1)/2 + 0.5)
+
+    plt.suptitle(f'Relative Entwicklung der Summe über alle Relevanzwerte')
+
+    for i in range(0, num_pics):
+        # plt.subplot(2, n_col, i+1)
+        sum_over_R = evolutions_of_R[i][1]
+        if i < num_pics-1:
+            label = evolutions_of_R[i][0] + '\n'
+        else:
+            label = evolutions_of_R[i][0]
+
+        fig = plt.plot(x, sum_over_R, label=label)
+        plt.ylim(y_min, y_max)
+        plt.gca().invert_xaxis()
+        plt.xlabel('Nummer des Layers\nKlassifizierung -> Pixelinput')
+        plt.ylabel(r'$\frac{Netzwerkoutput}{\sum_{Layer} Relevanzwert}$')
+
+    if not show:
+        fig_path = os.path.join(os.path.dirname(__file__), '..', '..', 'figures', 'plots', persist_string + '_R_plots')
+        plt.legend()
+        plt.savefig(fig_path)
+        plt.cla()
+        plt.clf()
+    else:
+        plt.legend()
+        plt.show()
+
