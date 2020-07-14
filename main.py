@@ -43,9 +43,10 @@ test_labels_df = classifier.test_labels_df
 test_labels = test_labels_df.values
 index = random.randint(0, test_labels.shape[0])
 
-# for index in np.random.randint(0, test_labels.shape[0], 1):
-for index in [656]:
-#     if np.sum(test_labels[index]) < 2:
+# for index in np.random.randint(0, test_labels.shape[0], 100):
+for index in [449]:
+#     if np.sum(test_labels[index]) != 1:
 #         continue
+    print(index)
     prediction = classifier.pred(index)
-    run_rel_prop(classifier, eps=0.3, gamma=0.2, index=index, prediction=prediction)
+    run_rel_prop(classifier, eps=0.25, gamma=0.2, index=index, prediction=prediction)

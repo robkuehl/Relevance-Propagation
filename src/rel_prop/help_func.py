@@ -33,6 +33,10 @@ class MidpointNormalize(colors.Normalize):
 
     def __init__(self, vmin=None, vmax=None, midpoint=None, clip=False):
         self.midpoint = midpoint
+        if np.abs(vmin) > np.abs(vmax):
+            vmax = np.abs(vmin)
+        else:
+            vmin = -vmax
         colors.Normalize.__init__(self, vmin, vmax, clip)
 
     def __call__(self, value, clip=None):
