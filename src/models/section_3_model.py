@@ -54,7 +54,7 @@ def getSection3Model(input_shape = (28,28)):
     model.add(Flatten(input_shape=input_shape))
     model.add(Dense(400, activation='relu', use_bias = False))
     #Kernel initializer sorgt dafuer, dass die Gewichtsmatrix die geforderte Pooling Operation realisiert
-    custom_pooling = Dense(100, activation = 'relu', use_bias = False, kernel_initializer = my_init)
+    custom_pooling = Dense(100, activation = 'relu', use_bias = False, kernel_initializer = ones_initializer)
     #Gewichte sollen nicht veraendert werden
     custom_pooling.trainable=False
     model.add(custom_pooling)
@@ -63,6 +63,10 @@ def getSection3Model(input_shape = (28,28)):
     sum_pooling = Dense(1, activation = 'relu', use_bias = False, kernel_initializer = ones_initializer)
     sum_pooling.trainable = False
     model.add(sum_pooling)
+    #Uebergangsmatrix bei sum_pooling aendern:
+    list_of_weights = [np.transpose(getSumPoolingWeights())]
+    #print("list of weights [0] shape: {}, [1] shape {}".format(list_of_weights[0].shape, list_of_weights[1].shape))
+    model.layers[2].set_weights(list_of_weights)
     return model
 
 
@@ -93,11 +97,16 @@ def get_binary_cl(data, dataset, model_type, class_nb, epochs=10, batch_size=20)
     cl.set_model()
     cl.fit_model(epochs, batch_size)
 
-    print("Model Accuracy: {}".format(cl.evaluate(10)))
+    #print("Model Accuracy: {}".format(cl.evaluate(10)))
     #print("Model Accuracy for images with label {} : {}".format(class_nb, cl.non_trivial_accuracy()))
     # TODO Weg zum Speichern und Laden des model finden -> Custom kernel initializer bereitet Probleme
     return cl
 
+def plot_rel_prop(image, model):
+    plot_mnist_image(image)               
+    rel = relevance_propagation().rel_prop(model, image)
+    plot_rel(rel)
+    print(test_labels[i])   
 
 #Funktion zum Plotten der Relevance_propagation
 def plot_images_with_rel(test_images, test_labels, model, nb_class):
@@ -136,7 +145,7 @@ class relevance_propagation:
 
     def calc_r(self, r: np.ndarray, output: np.ndarray, weights: np.ndarray, eps: int = 0, beta: int = None):
 
-        print("calling calc_r with shapes: output: {}, weights: {}, beta {} and eps {}".format(output.shape, weights.shape, beta, eps))
+        #print("calling calc_r with shapes: output: {}, weights: {}, beta {} and eps {}".format(output.shape, weights.shape, beta, eps))
         nominator = np.multiply(np.transpose(output),
                                 weights)
         #print("neuron values: {}".format(output))
@@ -160,15 +169,18 @@ class relevance_propagation:
             fraction = (1 - beta) * fraction_pos + beta * fraction_neg
 
         else:
-
-            denominator = np.matmul(output,
+            try:
+                denominator = np.matmul(output,
                                     weights)
+            except ValueError:
+                print("Dimension error in calc_r, outputs dimension {}, weights dimension {}".format(output.shape, weights.shape))
+            
 
             if eps:
                 denominator = denominator + eps * np.sign(denominator)
             # 0.0 im Nenner darf nicht sein, ersetze durch Kleine Zahl
             if 0.0 in denominator:
-                print("0 values in denominator, shape {} and values \n{}".format(denominator.shape, denominator))
+                #print("0 values in denominator, shape {} and values \n{}".format(denominator.shape, denominator))
                 denominator[denominator==0.0]=0.00000001
 
             fraction = np.divide(nominator, denominator)
@@ -194,18 +206,18 @@ class relevance_propagation:
         weightMatrices = []
         for layer in range(nFeatures):
             outputs.append(features[layer].numpy())
-            print("appended output with shape {} to outputs ".format(features[layer].numpy().shape))
+            #print("appended output with shape {} to outputs ".format(features[layer].numpy().shape))
         # decrease nFeatures to collect weight matrices (one less than no. of features)
         nFeatures-=1
         weights = []
         for betweenLayer in range(nFeatures):
             weightMatrices.append(model.weights[betweenLayer].numpy())
-            print("appended weigth matrix with shape {} to outputs ".format(model.weights[betweenLayer].numpy().shape))
+            #print("appended weigth matrix with shape {} to outputs ".format(model.weights[betweenLayer].numpy().shape))
         # Equivalent to R^{(l+1)}, initiated with the output
         rel_prop_vector_2 = np.transpose(outputs[nFeatures])
         # again, decrease nFeatures by one to get access to the list indices -> Backwards calculation of input Relevance vector
         nFeatures-=1
-        print("relevance_propagation, nFeatures is {} before loop".format(nFeatures))
+        #print("relevance_propagation, nFeatures is {} before loop".format(nFeatures))
         while(nFeatures>=0):
             #rel_prop_vector_1 is equivalent to R^{(l)} from the notebook
             rel_prop_vector_1= self.calc_r(r=rel_prop_vector_2, 
@@ -216,7 +228,7 @@ class relevance_propagation:
             nFeatures-=1
             rel_prop_vector_2 = rel_prop_vector_1
             if np.isnan(rel_prop_vector_1).any():
-                print("relevance_propagation vector shape {} and values \n{}".format(rel_prop_vector_1.shape, rel_prop_vector_1))
+                print("nan values in relevance_propagation vector shape {} and values \n{}".format(rel_prop_vector_1.shape, rel_prop_vector_1))
                 return np.zeros(input.shape)
 
         # Finally, output of the relevance propagation is the same dimension as the flattened input vector, 
@@ -236,18 +248,21 @@ class relevance_propagation:
                                 outputs=[layer.output for layer in model.layers])
         # Hilfsmodel berechnet Output der einzelnen Schichten für gegebenen Input
         features = extractor(np.array([input]))
-    
+        #print("feature extractor fuer input: ")
+        #plot_mnist_image(input)
         # wg sum_pooling ist die Relevanz {R_l} = x_l
         high_relevances = features[3].numpy()
         
         # Outputs der einzelnen Schichten
         output_midlayer = features[2].numpy()
 
-        # Berechnung von R1
-        r2 = np.transpose(high_relevances)
-        mid_relevances = calc_r(self,r=r2,
+        #print("Dimensionen der Outputs: Mittlerer Layer {}, Hoeherer Layer {}".format(output_midlayer.shape, high_relevances.shape))
+        #print("Werte der Outputs: Mittlerer Layer {}, Hoeherer Layer {}".format(output_midlayer, high_relevances))
+
+        # Berechnung der Relevanzen des mittleren Layers
+        mid_relevances = self.calc_r(r=np.transpose(high_relevances),
                     output=output_midlayer,
-                    weights=model.weights[2],
+                    weights=model.weights[2].numpy(),
                     eps=eps,
                     beta=beta)
     
