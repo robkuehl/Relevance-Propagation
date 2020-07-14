@@ -1,0 +1,85 @@
+%*****************************************************************************
+% Layout-Vorschlag zur Erstellung von Bachelor-, Master oder Diplomarbeiten  *
+% Modifikation moeglich                                                      *
+% S. Gippert, 2012                                                           *
+% ****************************************************************************
+
+\documentclass[11pt,a4paper]{scrbook}
+\usepackage{graphicx}
+% \usepackage{ngerman}
+\usepackage[ngerman]{babel}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+
+\usepackage{multirow}
+\usepackage{booktabs}
+
+\usepackage{hyperref}
+
+% Umgebungen
+\renewcommand{\baselinestretch}{1.50}\normalsize
+\newenvironment{Beweis}{\begin{proof}[Beweis]}{\end{proof}}
+\newtheorem{Satz}{Satz}[chapter]% Definitionen
+\def\Real{{{\rm I\!R}}}
+
+% Dokumentbeginn
+\begin{document}
+
+% Titelseite ----------ANPASSEN!----------------------
+\begin{titlepage}
+\begin{center}
+\huge \textbf{{Layer-Wise Relevance Propagation For Deep Neural Networks}} \\
+\vspace{2cm}
+\LARGE\textbf{{Abschlussbericht}}\\
+\vspace{2cm}
+\normalsize
+
+
+vorgelegt von  \textbf{Gruppe 4\\ Theo Conrads, Robin Kühling, Marc Bremser}\\
+am \today \\
+\vspace{2.5cm}
+\textbf{am Mathematischen Institut der \\Universit\"at zu K\"oln}\\
+\vspace{3cm}
+\end{center}
+\normalsize{
+\begin{center}
+Erstgutachter:  {Prof.~Dr.~Axel Klawonn} \\
+\vfill
+\includegraphics[scale=0.25]{uzk_logo} % bunt
+% \includegraphics[scale=0.25]{uzk_logo_grau} % grau
+\end{center}
+}
+\end{titlepage}
+
+
+\pagestyle{plain}
+\cleardoublepage
+\setcounter{page}{1}
+\pagenumbering{roman}
+\tableofcontents
+
+\listoffigures
+\addcontentsline{toc}{chapter}{Abbildungsverzeichnis}
+
+\listoftables
+\addcontentsline{toc}{chapter}{Tabellenverzeichnis}
+
+\cleardoublepage
+
+% Dateien
+\input{Einleitung}
+\input{content_marc1}
+\input{content_robin1}
+\input{content_marc2}
+\input{content_robin2}
+\input{content_theo}
+\input{content_marc3}
+
+% Literaturverzeichnis
+\bibliography{thesisbib}{}
+\bibliographystyle{plain}
+\addcontentsline{toc}{chapter}{Literaturverzeichnis}
+%\input{Erklaerung}
+
+\end{document}

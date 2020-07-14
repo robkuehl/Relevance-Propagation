@@ -1,0 +1,11 @@
+\babel@toc {ngerman}{}
+\contentsline {chapter}{Abbildungsverzeichnis}{iii}{chapter*.2}%
+\contentsline {chapter}{Tabellenverzeichnis}{v}{chapter*.3}%
+\contentsline {section}{\numberline {0.1}Einleitung}{vii}{section.0.1}%
+\contentsline {section}{\numberline {0.2}Interpretation der Resultate von Image-Classifiern}{vii}{section.0.2}%
+\contentsline {section}{\numberline {0.3}Min-Max Modell}{vii}{section.0.3}%
+\contentsline {section}{\numberline {0.4}Erweiterung Training-Free Ansatz}{vii}{section.0.4}%
+\contentsline {section}{\numberline {0.5}Implementierung - Netzarchitektur}{vii}{section.0.5}%
+\contentsline {section}{\numberline {0.6}LRP-Implementierung}{vii}{section.0.6}%
+\contentsline {section}{\numberline {0.7}Min-Max Implementierung}{vii}{section.0.7}%
+\contentsline {chapter}{Literaturverzeichnis}{ix}{chapter*.4}%

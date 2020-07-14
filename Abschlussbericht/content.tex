@@ -1,0 +1,103 @@
+\chapter{Hauptteil}
+
+Hier kommt der Hauptteil der Arbeit hinein.
+
+\noindent
+Als Platzhalter werde ich ein paar Befehle einf\"ugen, die vielleicht interessant sind...
+
+\noindent
+\textbf{Es ist selbstverst\"andlich, dass diese Zeilen aus der Datei gel\"oscht werden sollen...}
+
+Um das Inhaltsverzeichnis zu generieren, muss $3\times$ \"ubersetzt werden! 
+
+\section{Wie werden Umgebungen benutzt}
+\begin{Satz}[Kaffeetheorem]
+Ein Mathematiker ist eine Maschine, die Kaffee in Theoreme verwandelt. 
+\end{Satz}
+
+\begin{Beweis}
+trivial
+\end{Beweis}
+
+\subsection{Gleichungen}
+Ok, nehmen wir an, wir sollen Gleichungen ohne Nummerierung untereinander einr\"ucken. Das geht mit {\&} so
+
+\begin{align*}
+\left(a+b\right)^2&= a^2+2ab+b^2\\
+&= (b+a)^2
+\end{align*}
+
+
+oder nummeriert
+
+\begin{align}
+\left(a+b\right)^2&=a^2+2ab+b^2\\
+&= (b+a)^2
+\end{align}
+
+oder nur mit einer Nummer zentriert
+
+\begin{align}
+\begin{aligned}
+\left(a+b\right)^2&= a^2+2ab+b^2\\
+&=(b+a)^2
+\end{aligned}
+\end{align}
+
+bzw. mit Nummer nur f\"ur die letzte Zeile
+
+\begin{align}
+\left(a+b\right)^2&= a^2+2ab+b^2\nonumber\\
+&=(b+a)^2
+\end{align}
+
+Es ist auch m\"oglich Gleichungen zu labeln um sich sp\"ater im Text richtig auf sie beziehen zu k\"onnen.
+
+\begin{align}
+\label{eq:binom}
+\left(a+b\right)^2= a^2+2ab+b^2
+\end{align}
+
+Die Gleichung~(\ref{eq:binom}) ist die erste binomische Formel. 
+
+
+Referenzieren bzw. zitieren aus Quellen funktioniert durch \cite{ToselliWidlund}. Es sollte allerdings \textbf{immer} mit Seitenzahl oder Angabe des Theorems zitiert werden, das hei\ss t \cite[S. 127]{ToselliWidlund} oder \cite[Theorem~4.19]{ToselliWidlund}.
+F\"ur die \"Ubersetzung k\"onnen folgende Kommandos hintereinander ausgef\"uhrt werden:
+
+\begin{enumerate}
+\item latex layout
+\item bibtex layout
+\item latex layout
+\item latex layout
+\item latex layout
+\end{enumerate}
+
+Es ist durchaus sinnvoll gesch\"utzte Leerzeichen zu verwenden um zwischen Theoremen und deren Nummern einen Zeilenumbruch zu vermeiden... gesch\"utztes Leerzeichen ist die Tilde...
+
+Eine Tabelle:
+
+\begin{table}
+\small
+	\begin{center}
+	\begin{tabular}[c]{|c|c|c|c|c|c|c|c|c|c|c|c|}
+	\hline
+	\multicolumn{12}{|c|}{\textbf{A}}\\
+	\hline
+	&\multicolumn{5}{c|}{\textit{B}}&\multicolumn{3}{c|}{\textit{C}}&\multicolumn{3}{c|}{\textit{D}}\\
+	\hline$a$& &$b$&c&$|d|$ &$\#e$                &$f$  &$g$&h&$|z|$&as&M\\
+	\hline
+	2& b & 32 & 153 & 264 & 0\% &1 & 213& 2&5 &6 &3\\ 
+	2& c &3255 & 118 & 57 & 20\% & 123& 2&4 &4 &5 &4\\ 
+	\hline
+	\end{tabular}
+\caption{Tabellen-Caption.}
+	\label{tab:reg2}
+	\end{center}
+\end{table}
+
+\begin{figure}
+\includegraphics[scale=0.25]{uzk_logo}
+\includegraphics[scale=0.25]{uzk_logo_grau}
+\caption{Figure-Caption mit 2 Bildern.}
+\end{figure}
+
