@@ -13,23 +13,12 @@ data = [train_images, train_labels, test_images, test_labels]
 # Definiere die Klasse, für die wir einen binären Classifier trainieren wollen
 class_nb = 8
 
-def plot_rel(heatmap):
-    imageArray = np.asarray(heatmap)
-    #get min and max value and define the bound for heatmap
-    min_val = np.amin(imageArray)
-    max_val = np.amax(imageArray)
-    bound = np.amax(np.array([-1* min_val, max_val]))
-    fig = px.imshow(heatmap, color_continuous_scale=px.colors.sequential.Cividis, zmin=-1*bound, zmax=bound)
-    fig.show()
 
-def plot_rel_prop_comparison(image, model, mdl_data):
-    plot_mnist_image(image)               
-    heatmap_z = relevance_propagation().rel_prop(model, image)
-    heatmap_z_min_max = mdl_data.rel_prop(image)
-    plot_rel(heatmap_z)
-    plot_rel(heatmap_z_min_max)
     #print(test_labels[i])  
 
+""" Suche nach Bildern, fuer die sowohl Das Min-Max Modell, als auch das Standard Modell eine sinnvolle Heatmap liefern sollten.
+    (Beim Min-Max Modell, schiesse den Input durch jedes einzelne Hilfsnetz und schaue, ob wenigstens eines >0 Werte ausgibt)
+"""
 def get_good_examples(mdl_data, model):
     num_images = 2
     # Führe Relevance Propagation für die ersten <num_images> Bilder der Klasse nb_class aus, die der Classifier korrekt erkennt
@@ -54,13 +43,14 @@ def get_good_examples(mdl_data, model):
 cl = get_binary_cl(data=data, dataset='mnist', model_type='load_dense', class_nb=class_nb, epochs = 20)
 model = cl.getModel()
 inputs = model.inputs
-#print("dtype of inputs: {}".format(inputs.dtype))
-#plot_images_with_rel(data[2], data[3], model, class_nb)
 rp = relevance_propagation()
-data[0], data[1] = cl.getBinaryData()
+#Der Datensatz wurde in cl binaerisiert, arbeite mit den binaeren Labels weiter
+data[1], data[3] = cl.getBinaryData()
 mdl_data = model_data(data, rp)
 mdl_data.set_data(model)
+#Hier ggf. durch train_models ersetzen, um neu zu trainieren
 mdl_data.load_models()
+
 image_array = get_good_examples(mdl_data,model)
 #image_array = [1669,1756]
 for image_index in image_array:

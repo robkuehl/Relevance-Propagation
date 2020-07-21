@@ -30,13 +30,6 @@ def getSumPoolingWeights(inputDim = 400, outputDim = 100):
     weight_matrix = np.asarray(row_list)    
     return weight_matrix
 
-"""
-Eigener kernel Initializer, gibt die Matrix aus getSumPoolingWeights zurueck
-Matrix muss transponiert werden, da in Keras x^T W + b^T gerechnet wird
-"""
-def my_init(shape, dtype=None):
-    return np.transpose(getSumPoolingWeights(shape[0], shape[1]))
-
 
 """
 Das Modell aus Sec III in Montavon et al
@@ -303,8 +296,8 @@ class binary_classifier:
         print(self.train_images.shape)
         self.train_labels = np.asarray([train_labels[i] for i in train_indices])
         
-    def getBinaryData(self):
-        return self.train_images, self.train_labels
+    def getBinaryLabels(self):
+        return self.train_labels, self.test_labels
         
 
     def set_model(self):
