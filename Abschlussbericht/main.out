@@ -1,0 +1,20 @@
+\BOOKMARK [0][-]{chapter*.2}{Abbildungsverzeichnis}{}% 1
+\BOOKMARK [0][-]{chapter*.3}{Tabellenverzeichnis}{}% 2
+\BOOKMARK [0][-]{chapter.1}{Einleitung}{}% 3
+\BOOKMARK [0][-]{chapter.2}{Einführung Convolutional Neural Networks}{}% 4
+\BOOKMARK [0][-]{chapter.3}{Deep Taylor Decomposition}{}% 5
+\BOOKMARK [1][-]{section.3.1}{Taylor Decomposition}{chapter.3}% 6
+\BOOKMARK [1][-]{section.3.2}{Relevance Models}{chapter.3}% 7
+\BOOKMARK [2][-]{subsection.3.2.1}{Das Min-Max-Model}{section.3.2}% 8
+\BOOKMARK [2][-]{subsection.3.2.2}{Das Training-Free Model}{section.3.2}% 9
+\BOOKMARK [0][-]{chapter.4}{Layerwise Relevance Propagation}{}% 10
+\BOOKMARK [1][-]{section.4.1}{Herleitung der Basisregel}{chapter.4}% 11
+\BOOKMARK [1][-]{section.4.2}{Erweiterungen der Basisregel}{chapter.4}% 12
+\BOOKMARK [0][-]{chapter.5}{Implementierung}{}% 13
+\BOOKMARK [1][-]{section.5.1}{Implementierung des Min-Max-Models}{chapter.5}% 14
+\BOOKMARK [1][-]{section.5.2}{Implementierung LRP}{chapter.5}% 15
+\BOOKMARK [0][-]{chapter.6}{Ergebnisse}{}% 16
+\BOOKMARK [1][-]{section.6.1}{Ergebnisse Min-Max-Model}{chapter.6}% 17
+\BOOKMARK [1][-]{section.6.2}{Ergebnisse LRP inkl. Training-Free}{chapter.6}% 18
+\BOOKMARK [0][-]{chapter.7}{Fazit}{}% 19
+\BOOKMARK [0][-]{chapter*.4}{Literaturverzeichnis}{}% 20

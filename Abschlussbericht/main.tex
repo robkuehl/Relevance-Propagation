@@ -6,11 +6,12 @@
 
 \documentclass[11pt,a4paper]{scrbook}
 \usepackage{graphicx}
-% \usepackage{ngerman}
+\usepackage{ngerman}
 \usepackage[ngerman]{babel}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{amsthm}
+
 
 \usepackage{multirow}
 \usepackage{booktabs}
@@ -29,7 +30,7 @@
 % Titelseite ----------ANPASSEN!----------------------
 \begin{titlepage}
 \begin{center}
-\huge \textbf{{Layer-Wise Relevance Propagation For Deep Neural Networks}} \\
+\huge \textbf{{Layerwise Relevance Propagation For Deep Neural Networks}} \\
 \vspace{2cm}
 \LARGE\textbf{{Abschlussbericht}}\\
 \vspace{2cm}
@@ -39,7 +40,7 @@
 vorgelegt von  \textbf{Gruppe 4\\ Theo Conrads, Robin Kühling, Marc Bremser}\\
 am \today \\
 \vspace{2.5cm}
-\textbf{am Mathematischen Institut der \\Universit\"at zu K\"oln}\\
+\textbf{am Mathematischen Institut der \\Universität zu Köln}\\
 \vspace{3cm}
 \end{center}
 \normalsize{
@@ -69,12 +70,15 @@ Erstgutachter:  {Prof.~Dr.~Axel Klawonn} \\
 
 % Dateien
 \input{Einleitung}
-\input{content_marc1}
-\input{content_robin1}
-\input{content_marc2}
-\input{content_robin2}
-\input{content_theo}
-\input{content_marc3}
+\input{Kurzeinführung_CNN}
+\input{Einfache_Taylor_Decomposition}
+\input{DTD_Min_Max}
+\input{DTD_Training_Free}
+\input{Herleitung_LRP-Regeln_theo}
+\input{Implementierung_Min_Max}
+\input{Implementierung_LRP}
+\input{Ergebnisse}
+\input{Fazit}
 
 % Literaturverzeichnis
 \bibliography{thesisbib}{}
