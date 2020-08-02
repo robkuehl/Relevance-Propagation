@@ -45,11 +45,11 @@ def run_rel_prop(classifier, eps, gamma, index, prediction):
         # relevances.append(relevance)
         # evolutions_of_R.append(relative_R_vals)
         #
-        # # LRP-eps
-        # titles.append(f'LRP-ε (ε={eps} * std)\n({correct_label})')
-        # relevance, relative_R_vals = rel_prop(model, img, mask, eps=eps, no_bias=no_bias)
-        # relevances.append(relevance)
-        # evolutions_of_R.append(relative_R_vals)
+        # LRP-eps
+        titles.append(f'LRP-ε (ε={eps} * std)\n({correct_label})')
+        relevance, relative_R_vals = rel_prop(model, img, mask, eps=eps, no_bias=no_bias)
+        relevances.append(relevance)
+        evolutions_of_R.append(relative_R_vals)
         #
         # # LRP-gamma
         # titles.append(f'LRP-γ (γ={gamma})')
@@ -58,10 +58,10 @@ def run_rel_prop(classifier, eps, gamma, index, prediction):
         # evolutions_of_R.append(relative_R_vals)
         #
         # # LRP-composite
-        titles.append(f'LRP-Composite\n({correct_label})')
-        relevance, relative_R_vals = rel_prop(model, img, mask, eps=2*eps, gamma=2*gamma, comb=True, no_bias=no_bias)
-        relevances.append(relevance)
-        evolutions_of_R.append(relative_R_vals)
+        # titles.append(f'LRP-Composite\n({correct_label})')
+        # relevance, relative_R_vals = rel_prop(model, img, mask, eps=2*eps, gamma=2*gamma, comb=True, no_bias=no_bias)
+        # relevances.append(relevance)
+        # evolutions_of_R.append(relative_R_vals)
         # #
         # # z+
         # titles.append(r'$z^+$')
@@ -72,9 +72,11 @@ def run_rel_prop(classifier, eps, gamma, index, prediction):
     relevances = tuple(zip(titles, relevances))
     evolutions_of_R = tuple(zip(titles, evolutions_of_R))
     try:
-        plot_R_evo(evolutions_of_R, persist_string, False)
+        # plot_R_evo(evolutions_of_R, persist_string, False)
         plot_rel_prop(image, correct_label, relevances, persist_string, True)
-    except:
+        print('plotted')
+    except Exception as e:
+        raise e
         return
 
 
@@ -210,7 +212,7 @@ def calc_r(R: np.ndarray, prev_output: np.ndarray, layer, counter: int, eps: flo
 
         # eps = eps*std
         eps = tf.constant(eps * (tf.pow(tf.pow(z, 2).numpy().mean(), 0.5)))
-        z = z + eps
+        z = z + tf.sign(z) * eps
 
         # step 2
         s = tf.divide(R, z)
