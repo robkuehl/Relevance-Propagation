@@ -2,6 +2,7 @@
 
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
+from tensorflow.keras.optimizers import Adam
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -11,45 +12,47 @@ from PIL import Image
 
 import os
 from os.path import join as pathjoin
+from pathlib import Path
 
 from sklearn.model_selection import train_test_split
 
-from data.get_data import get_fashion_mnist, get_cifar10
-from data.get_voc_data import pascal_data_generator
-from models.cnn_models import get_model
+from src.data.get_data import get_fashion_mnist, get_cifar10, get_mnist
+from src.data.get_voc_data import pascal_data_generator
+from src.models.help_functions.cnn_models import get_model
 
 
 class mc_cnn_classifier:
     
-    def __init__(self, model_name:str, dataset:str, final_activation:str, loss:str, classes:list):
+    def __init__(self, model_name:str, dataset:str, storage_path:Path, model_path: str=None):
         self.model_name = model_name
         self.dataset = dataset 
+        self.model_path = model_path
         self.final_activation = 'softmax'
         self.loss = 'categorical_crossentropy'
         self.metric = 'accuracy'
         self.monitor = 'val_accuracy'
+        
         if dataset == 'fashion_mnist':
             data, self.classes = get_fashion_mnist(encoded=True, training=True)
         if dataset == 'cifar10':
             data, self.classes = get_cifar10(encoded=True, training=True)
-        elif 'pascal_voc' in dataset:
-            pdg = pascal_data_generator()
-            data, self.classes = pdg.get_training_data(classes, dataset)
+        if dataset == 'mnist':
+            data, self.classes = get_mnist()
         else:
             raise ValueError('Please enter an available dataset!')
+        
         self.train_images = data['train_images']
         self.train_labels = data['train_labels']
         self.test_images = data['test_images']
         self.test_labels = data['test_labels']
         self.input_shape = self.train_images[0].shape
-        self.storage_path = pathjoin(os.path.dirname(__file__), '../../models/cnn/')
         self.output_shape = len(self.classes)
-
+        self.storage_path = storage_path
     
 
     def create_model(self):
         self.model = get_model(model_name=self.model_name, input_shape=self.input_shape, output_shape=self.output_shape, final_activation=self.final_activation)
-        opt = 'adam'
+        opt = Adam(learning_rate=0.0001)
         #opt = SGD(lr=0.001, momentum=0.9)
         self.model.compile(optimizer=opt,
                 loss=self.loss,
@@ -58,6 +61,11 @@ class mc_cnn_classifier:
         
     
     def run_model(self, batch_size, epochs):
+        if self.model_path != None:
+            self.model.load_weights(self.model_path)
+            return 1
+        else:
+            pass
         # data augmentation
         #create validation data
         self.train_images, self.validation_images, self.train_labels, self.validation_labels = train_test_split(self.train_images, self.train_labels, test_size=0.2)
@@ -66,27 +74,30 @@ class mc_cnn_classifier:
         datagen = ImageDataGenerator(rotation_range=50.0,
                                      width_shift_range = 0.1,
                                      height_shift_range = 0.1,
-                                     shear_range=0.1,
-                                     zoom_range=0.1,
                                      horizontal_flip=True,
                                      vertical_flip = True
                                      )
     
         steps = int(self.train_images.shape[0] / batch_size)
-        # prepare iterator
+        val_steps = int(self.validation_labels.shape[0]/batch_size)
+        # Erstellen des Iterator
         it_train = datagen.flow(self.train_images, self.train_labels, batch_size=batch_size)
-                
-        dt = datetime.now().strftime('%d_%m_%Y-%H')
-        storage_path = pathjoin(self.storage_path, '{}_{}_{}_{}.h5'.format(self.dataset, self.model_name, 'multiclass', dt))
         
+        # Erstellen der Iterator für Validierung und Evaluierung (keine Augmentation, nur gleiches Preprocessing)
+        test_datagen = ImageDataGenerator()
+        it_val = test_datagen.flow(self.validation_images, self.validation_labels, batch_size=batch_size)
+        it_eval = test_datagen.flow(self.test_images, self.test_labels, batch_size=batch_size)
+        
+        # Hier werden die Checkpoints gespeichert
+        storage_path = pathjoin(self.storage_path, '{}_{}_{}.h5'.format(self.dataset, self.model_name, 'multiclass'))
+
         checkpoint = ModelCheckpoint(storage_path, monitor=self.monitor, verbose=1, save_best_only=True, save_weights_only=False, mode='auto', period=1)
         early = EarlyStopping(monitor=self.monitor, min_delta=0, patience=25, verbose=1, mode='auto')
         
-        #self.model.fit(x=self.train_images, y=self.train_labels, batch_size=batch_size, epochs=epochs, callbacks=[checkpoint,early], validation_split=0.2)
-        history = self.model.fit_generator(it_train, steps_per_epoch=steps, epochs=epochs, validation_data=(self.validation_images, self.validation_labels), callbacks=[checkpoint,early], verbose=1)
-        self.model.evaluate(x=self.test_images, y=self.test_labels, verbose=1, batch_size=batch_size)
+        self.history = self.model.fit(it_train, steps_per_epoch=steps, epochs=epochs, validation_data=it_val, validation_steps=val_steps, callbacks=[checkpoint, early], verbose=1)
+        self.model.evaluate(it_eval, verbose=1, steps=int(self.test_images.shape[0]/batch_size))
         
-        return ntpath.basename(storage_path), history
+        return 1
         
 
     def pred(self, i):
