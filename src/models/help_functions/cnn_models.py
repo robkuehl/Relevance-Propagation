@@ -51,7 +51,7 @@ def get_model(model_name: str, input_shape: tuple, output_shape: int, final_acti
         model.add(Dense(output_shape))
         model.add(Activation(final_activation))
         
-    
+    # TODO: Delete
     if model_name == 'vgg16':
         vgg16_model = VGG16()
         model = Sequential()
