@@ -13,7 +13,7 @@ from sklearn.model_selection import train_test_split
 from PIL import Image, ImageOps
 from sklearn.utils import shuffle
 
-class pascal_data_generator():
+class pascal_data_generator():   
 
     def __init__(self, desired_size:int=224, override=False):
         dirname = os.path.dirname(__file__)

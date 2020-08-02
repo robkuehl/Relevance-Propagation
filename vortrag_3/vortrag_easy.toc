@@ -1,3 +1,0 @@
-\beamer@sectionintoc {1}{Einleitung}{1}{0}{1}
-\beamer@endinputifotherversion {3.36pt}
-\select@language {ngerman}
