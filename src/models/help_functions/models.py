@@ -2,7 +2,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Conv2D, Flatten, MaxPooling2D, AveragePooling2D, BatchNormalization, Dropout, Activation
 from tensorflow.keras.applications.vgg16 import VGG16
 
-def get_model(model_name: str, input_shape: tuple, output_shape: int, final_activation: str):
+def get_cnn_model(model_name: str, input_shape: tuple, output_shape: int, final_activation: str):
     
     if model_name == 'base_model':
         model = Sequential()
@@ -61,4 +61,14 @@ def get_model(model_name: str, input_shape: tuple, output_shape: int, final_acti
             layer.trainable=False
     
       
+    return model
+
+
+def get_dense_model(model_name:str, input_shape:tuple, output_shape:int, final_activation:str):
+    
+    if model_name == 'montavon_model':
+        # TODO: Monatvon Model einfügen
+        model = Sequential()
+        
+        
     return model

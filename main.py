@@ -3,7 +3,7 @@ import random
 import tensorflow as tf
 import numpy as np
 
-from src.model_evaluation import Pascal_Evaluator
+from src.model_evaluation import Pascal_Evaluator, Multiclass_Evaluator
 from src.rel_prop.rel_prop import run_rel_prop
 
 gpu_used = True
@@ -17,34 +17,12 @@ if gpu_used == True:
         # Invalid device or cannot modify virtual devices once initialized.
         pass
     
-'''
-Infos zum Classifier:
-    model = classifier.model
-    train_images = classifier.train_images
-    train_labels_df = classifier.train_labels_df
-'''
 
-'''
-Für main_evaluate:
-    ist in cnn_eval.py in src konfiguriert
-    i ist der Index für eine config aus der Liste aller Konfigurationen
-'''
-p_e = Pascal_Evaluator()
-classifier = p_e.evaluate_config(config_nb=1)
-'''
-Für main_load_model:
-    ist in cnn_eval.py in src konfiguriert
-    Es muss der Pfad eines Orders angegeben werden, der durch die Methode main_evaluate angelegt wurde
-'''
+# p_e = Pascal_Evaluator()
+# classifier = p_e.evaluate_config(config_nb=1)
+
+mce = Multiclass_Evaluator()
+mce.evaluate_config(0)
 
 
-"""classifier = main_load_model('29_06_2020-20-35')
-test_images = classifier.test_images
-test_labels_df = classifier.test_labels_df
-test_labels = test_labels_df.values
-index = random.randint(0, test_labels.shape[0])
 
-for index in np.random.randint(0, test_labels.shape[0], 20):
-# for index in [454]:
-    prediction = classifier.pred(index)
-    run_rel_prop(classifier, eps=0.4, gamma=0.4, index=index, prediction=prediction)"""

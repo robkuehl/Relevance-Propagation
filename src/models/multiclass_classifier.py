@@ -18,26 +18,28 @@ from sklearn.model_selection import train_test_split
 
 from src.data.get_data import get_fashion_mnist, get_cifar10, get_mnist
 from src.data.get_voc_data import pascal_data_generator
-from src.models.help_functions.cnn_models import get_model
+from src.models.help_functions.models import get_cnn_model, get_dense_model
 
 
-class mc_cnn_classifier:
+class mc_classifier:
     
-    def __init__(self, model_name:str, dataset:str, storage_path:Path, model_path: str=None):
-        self.model_name = model_name
-        self.dataset = dataset 
+    def __init__(self, model_type:str, model_name:str, dataset:str, storage_path:Path, model_path: str=None):
         self.model_path = model_path
+        self.model_name = model_name
+        self.model_type = model_type
+        self.dataset = dataset 
         self.final_activation = 'softmax'
         self.loss = 'categorical_crossentropy'
         self.metric = 'accuracy'
         self.monitor = 'val_accuracy'
         
+        if dataset == 'mnist':
+            data, self.classes = get_mnist()
         if dataset == 'fashion_mnist':
             data, self.classes = get_fashion_mnist(encoded=True, training=True)
         if dataset == 'cifar10':
             data, self.classes = get_cifar10(encoded=True, training=True)
-        if dataset == 'mnist':
-            data, self.classes = get_mnist()
+        
         else:
             raise ValueError('Please enter an available dataset!')
         
@@ -51,7 +53,12 @@ class mc_cnn_classifier:
     
 
     def create_model(self):
-        self.model = get_model(model_name=self.model_name, input_shape=self.input_shape, output_shape=self.output_shape, final_activation=self.final_activation)
+        if self.model_type == 'cnn':
+            self.model = get_cnn_model(model_name=self.model_name, input_shape=self.input_shape, output_shape=self.output_shape, final_activation=self.final_activation)
+        elif self.model_type == 'dense':
+            self.model = get_dense_model(model_name=self.model_name, input_shape=self.input_shape, output_shape=self.output_shape, final_activation=self.final_activation)
+        else:
+            raise ValueError("model_type should be dense or cnn")
         opt = Adam(learning_rate=0.0001)
         #opt = SGD(lr=0.001, momentum=0.9)
         self.model.compile(optimizer=opt,
@@ -70,13 +77,15 @@ class mc_cnn_classifier:
         #create validation data
         self.train_images, self.validation_images, self.train_labels, self.validation_labels = train_test_split(self.train_images, self.train_labels, test_size=0.2)
         
-        # create data generator
+        '''
         datagen = ImageDataGenerator(rotation_range=50.0,
                                      width_shift_range = 0.1,
                                      height_shift_range = 0.1,
                                      horizontal_flip=True,
                                      vertical_flip = True
                                      )
+        '''
+        datagen = ImageDataGenerator()
     
         steps = int(self.train_images.shape[0] / batch_size)
         val_steps = int(self.validation_labels.shape[0]/batch_size)

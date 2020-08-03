@@ -22,7 +22,7 @@ from sklearn.model_selection import train_test_split
 
 from src.data.get_data import get_fashion_mnist, get_cifar10
 from src.data.get_voc_data import pascal_data_generator
-from src.models.help_functions.cnn_models import get_model
+from src.models.help_functions.models import get_cnn_model as get_model
 #from models.custom_callback import CustomModelCheckpoint
 from src.models.help_functions.custom_modelcheckpoint import ModelCheckpoint as CustomModelCheckpoint
 

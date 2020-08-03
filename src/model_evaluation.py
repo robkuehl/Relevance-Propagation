@@ -15,6 +15,7 @@ from datetime import datetime
 from pathlib import Path
 
 from src.models.multilabel_cnn import ml_cnn_classifier
+from src.models.multiclass_classifier import mc_classifier
 
 # Pfad zu dieser Python Datei. Wird genutzt um Speicherort für die Modelle festzulegen.
 dirname = os.path.dirname(__file__)
@@ -101,7 +102,7 @@ class Pascal_Evaluator():
     # evaluate_config gibt eine Classifier mit einem trainierten CNN zurück
     def evaluate_config(self, config_nb: int):
         dt = datetime.now().strftime('%d_%m_%Y-%H-%M')
-        storage_path = os.path.join(dirname, '..', 'models', 'cnn','pascal', dt)
+        storage_path = os.path.join(dirname, '..', 'models', 'pascal', dt)
         os.makedirs(storage_path)
         config = self.configs[config_nb]
         config['storage_path']=storage_path
@@ -112,6 +113,10 @@ class Pascal_Evaluator():
         loss = config['loss']
         classes = config['classes']
         storage_path = config['storage_path']
+        
+        print("Evaluating the following configurartion:\n")
+        for key in config.keys():
+            print("{} : {}".format(key, config[key]))
         
         classifier = ml_cnn_classifier(model_name=model_name, 
                                     dataset=dataset, 
@@ -181,36 +186,107 @@ class Pascal_Evaluator():
     
     
 
-# TODO: Auswertung von Multiclass Architekturen
 class Multiclass_Evaluator():
     
-
-    """
-
-    def mc_evaluate_config(model_name, dataset, final_activation, loss, classes, batch_size, epochs):
-        if not os.path.isfile(ml_dictpath):
-            results = {}
-        else:
-            with open(mc_dictpath, 'rb') as file:
-                results = pickle.load(file)
-                
-        classifier = mc_cnn_classifier(model_name=model_name, dataset=dataset, final_activation=final_activation, loss=loss, classes=classes)
-        classifier.create_model()
-        modelfile_name, history = classifier.run_model(batch_size=batch_size, epochs=epochs)
-        top1_score, top3_score, top3_predictions = classifier.eval()
-        
-        
-        results[modelfile_name]={'top1_score':top1_score,
-                                'top3_score':top3_score,
-                                'top3_predictions':top3_predictions,
-                                'history':history}
-        
-        with open(mc_dictpath, 'wb') as file:
-            pickle.dump(results, file)
+    def __init__(self):
+    
+        self.configs = [
             
-        return top1_score, top3_score, top3_predictions, classifier
+            {
+                'model_type':'cnn',
+                'model_name':'base_model',
+                'dataset':'cifar10',
+                'epochs':150,
+                'batch_size':32,
+                'storage_path':None
+            }
+            
+        ]
         
-    """
+    def add_config(self, config):
+        self.configs.append(config)
+    
+    
+    # evaluate_config gibt eine Classifier mit einem trainierten CNN zurück
+    def evaluate_config(self, config_nb: int):
+        dt = datetime.now().strftime('%d_%m_%Y-%H-%M')
+        config = self.configs[config_nb]
+        storage_path = os.path.join(dirname, '..', 'models', config['dataset'], config['model_name'], dt)
+        os.makedirs(storage_path)
+        config['storage_path']=storage_path
+        
+        model_type = config['model_type']
+        model_name = config['model_name']
+        dataset = config['dataset']
+        storage_path = config['storage_path']
+        
+        print("Evaluating the following configurartion:\n")
+        for key in config.keys():
+            print("{} : {}".format(key, config[key]))
+        
+        classifier = mc_classifier(
+                                    model_type=model_type,
+                                    model_name=model_name, 
+                                    dataset=dataset,  
+                                    model_path=None,
+                                    storage_path=storage_path)
+        classifier.create_model()
+        
+        classifier.run_model(batch_size=config['batch_size'], epochs=config['epochs'])   
+        
+        try:
+            history = classifier.history
+        except Exception:
+            pass
+        
+        with open(os.path.join(storage_path, 'model_history'), 'wb') as file_pi:
+            pickle.dump(history.history, file_pi)
+            
+        with open(os.path.join(storage_path, 'model_summary.txt'), 'w') as f:
+            with redirect_stdout(f):
+                classifier.model.summary()
+                
+        with open(os.path.join(storage_path, 'classifier_config.pickle'), 'wb') as f:
+            pickle.dump(config, f)
+            
+        plot_history(history, os.path.join(storage_path, 'plots'))
+                
+                
+        return classifier
+    
+    
+    # load_model gibt eine Classifier mit einem trainierten CNN zurück
+    def load_model(self, folderpath):
+        model_dir = Path(folderpath)
+        with open(os.path.join(model_dir, 'classifier_config.pickle'), 'rb') as config_file:
+            config = pickle.load(config_file)
+        
+        print(config)
+        model_type = config['model_type']
+        model_name = config['model_name']
+        dataset = config['dataset']
+        
+        model_path = None 
+        
+        for file in os.listdir(model_dir):
+            if ".h5" in file:
+                model_path = os.path.join(model_dir, file)
+            else:
+                continue
+        print(model_path)
+        classifier = mc_classifier(
+                                    model_type=model_type,
+                                    model_name=model_name, 
+                                    dataset=dataset,  
+                                    model_path=model_path,
+                                    storage_path=None)
+        classifier.create_model()
+        classifier.run_model(0,0)
+
+        return classifier
+    
+
+   
     
 
 
