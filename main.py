@@ -3,7 +3,7 @@ import random
 import tensorflow as tf
 import numpy as np
 
-from src.cnn_eval import main_evaluate, main_load_model
+from src.model_evaluation import Pascal_Evaluator
 from src.rel_prop.rel_prop import run_rel_prop
 
 gpu_used = True
@@ -29,7 +29,8 @@ Für main_evaluate:
     ist in cnn_eval.py in src konfiguriert
     i ist der Index für eine config aus der Liste aller Konfigurationen
 '''
-classifier = main_evaluate(i=2)
+p_e = Pascal_Evaluator()
+classifier = p_e.evaluate_config(config_nb=1)
 '''
 Für main_load_model:
     ist in cnn_eval.py in src konfiguriert
