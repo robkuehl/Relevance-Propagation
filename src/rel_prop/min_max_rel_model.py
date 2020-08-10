@@ -22,12 +22,28 @@ class Nested_Regressor():
         sum_pooling.trainable=False
         model.add(sum_pooling)
         self.model = model
+        
+    def load_relevances():
+        
+    
+    def load_higher_relevances():
+        
+        
+        
 
 class MinMaxModel():
     
     def __init__(self, classifier:tensorflow.keras.model, data):
         self.classifier = classifier
         self.data = data
+        
+    for 
+        
+        
+    
+        
+        
+    
         
     
    

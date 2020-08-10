@@ -15,6 +15,12 @@ class Montavon_Model:
 
     def set_data(self, test_size: float):
         self.train_images, self.test_images, self.train_labels, self.test_labels = get_mnist_binary(class_nb=self.class_nb, test_size=0.25)
+        self.data = {
+            'train_images':self.train_images,
+            'test_images':self.test_images,
+            'train_labels': self.train_labels,
+            'test_labels': self.test_labelsas
+        }
         
 
     """
