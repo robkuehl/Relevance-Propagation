@@ -1,0 +1,94 @@
+%\section{Part 2}
+
+\frame{\frametitle{Deep Taylor Decomposition - Rückblick}
+\begin{itemize}
+\item Einfaches Netzwerk mit einem Hidden Layer, ReLU Aktivierung und Sum-Pooling als Output.
+\item Zusätzliche Voraussetzung: $b_j \leq 0$. 
+\begin{figure}[H]
+\includegraphics[width = 0.7 \textwidth]{grafiken_marc/simple_net.png}
+\end{figure}
+\item Für das Outputneuron $x_k$ gilt: $x_k = max(0,\sum_{j} x_j)$
+%\item Gesucht ist eine Vorschrift, nach der die Relevanz $R_k$ auf die Neuronen der vorherigen Schicht verteilt wird.
+\end{itemize}
+\footnote{Grafik entnommen aus \ref{itm:Mont17}}
+}
+
+\frame{\frametitle{Deep Taylor Decomposition - Rückblick}
+\begin{itemize}
+\item Suche eine Nullstelle f\"ur die Taylorentwicklung von $R_k(\boldsymbol{x}) = \sum_j x_j$.
+
+\begin{figure}
+\includegraphics[width = 0.6\textwidth]{grafiken_marc/rel_prop_1.png}
+\end{figure}
+\pause
+\item Wg. ReLU Aktivierung im vorherigen Layer und $\sum_j x_j \overset{!}{=} 0$ ist $\tilde{\boldsymbol{x}}=$\textbf{0} die einzige Nullstelle von $R_k$.
+\item Wegen $R_j=\frac{\partial R_{k}}{\partial x_{j}}(x_j - \tilde{x}_j)=1 \cdot (x_j - 0)$ gilt also
+\item $R_{j}=x_{j}= \max \left(0, \sum_{i} x_{i} w_{i j}+b_{j}\right)$
+\end{itemize}
+\footnote{Grafik entnommen aus \ref{itm:Mont17}}
+}
+
+\frame{\frametitle{Deep Taylor Decomposition - Generische Regel}
+\begin{itemize}
+%\item Führe nun für jede der $R_j$ Taylorentwicklung mit einem eigenen Entwicklungspunkt $\hat{x}^{(j)}$ durch.
+\item Es gilt $R_j = x_j = \max \left(0, \sum_{i} x_{i} w_{i j}+b_{j}\right)$
+
+\begin{figure}
+\includegraphics[width = 0.6\textwidth]{grafiken_marc/rel_prop_2.png}
+\end{figure}
+%\pause
+\item Unterscheide nun 2 Fälle:
+\begin{enumerate}
+\item $R_j=0$: Nicht aktivierte Neuronen sollen keine Relevanz zurückverteilen. Insbesondere gilt hier $\tilde{\bx}= \bx $.
+\item $R_j>0$: Hierfür wird ein Richtungsvektor $\bv^{(j)}$ definiert. $\tilde{\bx}$ soll von der Form $\bx	+ t \cdot \bv^{(j)}$, mit $t \in \rn$ sein.
+\end{enumerate}
+\end{itemize}
+\footnote{Grafik entnommen aus \ref{itm:Mont17}}
+}
+
+
+\begin{frame}{Deep Taylor - Entwicklungspunkt}
+\begin{itemize}
+\item Allgemeine Vorgehensweise: 
+\item Durch Einsetzen von $\tilde{\bx}=\bx	+ t \cdot \bv^{(j)}$ in die Ebenengleichung $\sum_{i} \tilde{x}_{i} w_{i j}+b_{j}$ lässt sich eine allgemeine Formel für $t$ finden.
+\item Somit gilt: 
+\begin{align*}
+0 &= \sum_{i} \left(x_{i} + t v_i^{(j)} \right) w_{i j}+b_{j} \\
+\Leftrightarrow -t& =\frac{\sum_{i} x_{i} w_{i j}+b_{j}}{\sum_{i} v_{i}^{(j)} w_{i j}}\\
+\ \\
+\Rightarrow x_i - \tilde{x_i} &= -t v_i^{(j)} = \frac{\sum_{i} x_{i} w_{i j}+b_{j}}{\sum_{i} v_{i}^{(j)} w_{i j}} v_i^{(j)}
+\end{align*}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Deep Taylor - Entwicklungspunkt}
+\begin{itemize}
+\item Für die Umverteilung von der $l+1$-ten Schicht in die $l$-te Schicht gilt
+\begin{align*}
+R_i^l &= \sum_{j} R_{i \leftarrow j}^l =  \sum_{j} \frac{\partial R_{j}^{l+1}}{\partial x_{i}^l}
+(x_i - \tilde{x_i}) \\
+&= \sum_{j : R_j = 0} \frac{\partial R_{j}^{l+1}}{\partial x_{i}^l} \cdot 0 + \sum_{j: R_j>0} w_{ij} \frac{\sum_{i} x_{i} w_{i j}+b_{j}}{\sum_{i} v_{i}^{(j)} w_{i j}} v_i^{(j)} \\
+&= \sum_{j} \frac{v_i^{(j)}  w_{i j}}{\sum_{i} v_{i}^{(j)} w_{i j}} R_j^{l+1}
+\end{align*}
+\item $\Rightarrow$ Allgemeine Formel in Abhängigkeit von $v_i^{(j)}$
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Deep Taylor - Die $z^+$-Regel}
+\begin{itemize}
+\item $z^+$ Regel vom letzten Vortrag
+\item Idee der Regel: Wähle einen Punkt in $\rn^l$, der bez. $R_j$ auf $0$ abbildet.
+\item Wähle $v_i^{(j)} = x_i - x_i \cdot \mathds{1}_{w_{ij} \leq 0} = x_i \cdot \mathds{1}_{w_{ij} > 0}$
+\item Einsetzen in die Gleichung liefert:
+\begin{align*}
+R_i = \sum_{j} \frac{x_i \mathds{1}_{w_{ij} > 0} w_{i j}}{\sum_{i} x_i \mathds{1}_{w_{ij} > 0} w_{i j}} R_j^{l+1} = \sum_{j} \frac{z_{ij}^{+}}{\sum_{i} z_{ij}^{+}} R_j^{l+1}
+\end{align*}
+\item Mit $z_{ij} = x_i \cdot w_{ij}$
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Deep Taylor - Entwicklungspunkt}
+\begin{itemize}
+\item $z^B$ Regel herleiten.
+\end{itemize}
+\end{frame}

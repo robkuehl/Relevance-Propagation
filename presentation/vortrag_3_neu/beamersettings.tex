@@ -1,0 +1,141 @@
+% Farben fuer die Uni Koeln
+\definecolor{unikoelndarkblue}{rgb}{0.25, 0.47, 0.61}
+\definecolor{unikoelngray}{rgb}{0.89, 0.89, 0.89}
+\definecolor{unikoelnlightblue}{rgb}{0.91, 0.93, 0.95}
+\definecolor{unikoelndarkgray}{rgb}{0.41, 0.33, 0.33}
+\definecolor{unikoelnred}{rgb}{0.85, 0.16, 0.11}
+\definecolor{unikoelngreen}{rgb}{0.16, 0.85, 0.11}
+
+% Aussehen der Folien
+\mode<presentation>
+{
+  \defbeamertemplate*{footline}{authordateframes}
+  {
+   \leavevmode%
+   \hbox{%
+   \begin{beamercolorbox}[wd=.5\paperwidth,ht=2.25ex,dp=1ex,left]{author in head/foot}%
+   \hspace*{1em}\usebeamerfont{author in head/foot}%\insertshortauthor~
+   \end{beamercolorbox}%
+   \begin{beamercolorbox}[wd=.5\paperwidth,ht=2.25ex,dp=1ex,right]{date in head/foot}%
+     \usebeamerfont{date in head/foot}\insertshortdate{}\hspace*{2em}
+     \insertframenumber{}\hspace*{2ex} 
+    \end{beamercolorbox}}%
+   \vskip0pt%
+  }
+								
+  \defbeamertemplate*{headline}{miniframeslogo}
+  {%
+    \begin{beamercolorbox}[colsep=1.5pt]{upper separation line head}%
+    \end{beamercolorbox}
+    \begin{beamercolorbox}{section in head/foot}
+    \vskip2pt\insertsectionnavigationhorizontal{\paperwidth}{}{\hskip0pt plus1filll}\vskip2pt
+    \end{beamercolorbox}%
+    \begin{beamercolorbox}[colsep=1.5pt]{lower separation line head}
+    \end{beamercolorbox}
+  }
+			
+  \useoutertheme[footline=authorinstitute]{miniframes}
+  \setbeamertemplate{mini frames}[box]
+
+  \useinnertheme{rectangles}
+
+  \setbeamertemplate{footline}[authordateframes]
+  \setbeamertemplate{headline}[miniframeslogo]
+}
+			
+% Etwas mehr Platz schaffen			
+\addtobeamertemplate{frametitle}{}{\vspace*{-0.5\baselineskip}}
+
+% Farbschema anpassen
+\setbeamertemplate{section in head/foot shaded}[default][40]
+\setbeamercolor*{section in head/foot}{fg=unikoelndarkgray, bg=unikoelngray}
+\setbeamercolor*{subsection in head/foot}{fg=unikoelndarkgray, bg=unikoelngray}
+\setbeamercolor*{upper separation line head}{fg=white, bg=unikoelndarkblue}
+\setbeamercolor*{lower separation line title}{fg=white, bg=unikoelndarkblue}
+\setbeamercolor*{author in head/foot}{fg=unikoelndarkgray, bg=unikoelngray}
+\setbeamercolor*{date in head/foot}{fg=unikoelndarkgray, bg=unikoelngray}
+\setbeamercolor*{palette primary}{fg=unikoelndarkblue,bg=white}
+\setbeamercolor*{palette secondary}{fg=white, bg=unikoelnlightblue}
+\setbeamercolor*{palette tertiary}{bg=unikoelndarkblue, fg=unikoelnlightblue}
+\setbeamercolor*{structure}{fg=unikoelndarkblue}
+\setbeamercolor{titlelike}{parent=pallette primary, fg=unikoelndarkblue, bg=white}
+\setbeamercolor{frametitle}{fg=unikoelndarkblue, bg=white}
+\setbeamercolor{block title}{fg=unikoelndarkblue, bg=white}
+\setbeamercolor{block body}{fg=unikoelndarkgray, bg=white}
+\setbeamercolor{block body}{fg=unikoelndarkgray, bg=white}
+\setbeamercolor{block title example}{fg=white, bg=unikoelndarkblue}
+\setbeamercolor{block body example}{bg=unikoelngray}						
+\setbeamercolor{block title alerted}{fg=white, bg=unikoelnred}
+\setbeamercolor{block body alerted}{bg=unikoelngray}
+\setbeamercolor{alerted text}{fg=unikoelnred}
+\setbeamercolor{example text}{fg=unikoelndarkblue}
+                
+% Fix fuer komisch ausgerichtete Spalten in Frames mit top-align
+\makeatletter      
+ \define@key{beamerframe}{t}[true]{% top
+   \beamer@frametopskip=.2cm plus .5\paperheight\relax%
+   \beamer@framebottomskip=0pt plus 1fill\relax%
+   \beamer@frametopskipautobreak=\beamer@frametopskip\relax%
+   \beamer@framebottomskipautobreak=\beamer@framebottomskip\relax%
+   \def\beamer@initfirstlineunskip{}%
+ }
+\makeatother  
+
+% Ein paar nuetzliche Beamermakros
+
+\newenvironment{itemblock}[1]{%
+	\begin{block}{#1}
+		\begin{itemize}
+}{%
+		\end{itemize}
+	\end{block}
+}
+
+\newenvironment{alitemblock}[1]{%
+	\begin{alertblock}{#1}
+		\begin{itemize}
+}{%
+		\end{itemize}
+	\end{alertblock}
+}
+
+\newenvironment{exitemblock}[1]{%
+	\begin{exampleblock}{#1}
+		\begin{itemize}
+}{%
+		\end{itemize}
+	\end{exampleblock}
+}
+
+		\newenvironment{enumblock}[1]{%
+	\begin{block}{#1}
+		\begin{enumerate}
+}{%
+		\end{enumerate}
+	\end{block}
+}
+
+\newenvironment{alenumblock}[1]{%
+	\begin{alertblock}{#1}
+		\begin{enumerate}
+}{%
+		\end{enumerate}
+	\end{alertblock}
+}
+
+\newenvironment{exenumblock}[1]{%
+	\begin{exampleblock}{#1}
+		\begin{enumerate}
+}{%
+		\end{enumerate}
+	\end{exampleblock}
+}
+
+\newenvironment{mycolumns}{%
+	\vspace*{-0.5\baselineskip}
+	\begin{columns}[T, onlytextwidth]
+}{%
+	\end{columns}
+}
+
+\newcommand{\str}{\structure}

@@ -1,0 +1,116 @@
+\documentclass[t, compress]{beamer}
+% Defines
+\def\CC{{\mathcal{C}}}
+% Packages (Standard)
+\usepackage[ngerman]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{caption}
+%\usepackage{natbib}
+\usepackage{verbatim}
+\usepackage{listings}
+\usepackage{subfig}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%EIGENE INCLUDES FUER DEN 3. VORTRAG:
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Marc
+\usepackage{mathtools}
+\usepackage{dsfont}
+
+
+
+%Eigene Befehle:
+\newcommand{\rn}{\mathbb{R}}
+\renewcommand{\hat}[1]{\tilde{#1}}
+
+%EIGENE BEFEHLE FUER DEN 3. VORTRAG:
+\newcommand{\bx}{\boldsymbol{x}}
+\newcommand{\bv}{\boldsymbol{v}}
+
+% Die Beamervorlage einbinden
+\input{beamersettings}
+
+% Zum debuggen nuetzlich: Erzeugt ein Gitter im Hintergrund
+%\setbeamertemplate{background}[grid][step=0.5cm]
+
+% Navigationssymbole ausblenden
+\setbeamertemplate{navigation symbols}{}
+
+% Metadaten
+\title{Relevance Propagation for Deep Neural Networks}
+\subtitle{Zwischenvortrag 3}
+\author{Theo Conrads, Robin K\"uhling, Marc Bremser}
+\date{\today}
+\titlegraphic{\includegraphics[width=5cm]{grafiken_marc/titlegraphic.png}}
+
+% Der eigentliche Vortrag  
+\begin{document}
+
+
+\begin{frame}
+	\titlepage
+\end{frame}
+
+\begin{frame}{Überblick}
+  \tableofcontents[hideallsubsections]
+\end{frame}
+
+\include{content_einleitung}
+
+\include{content_marc1}
+
+\include{content_marc2}
+
+
+
+%\section{Literatur}
+\begin{frame}{Quellen}
+\begin{itemize}
+\item Quellen für Bilder, Implementierungshinweise:
+\item Montavon, Binder, Lapuschkin, Samek, Müller :  \\
+"{}Layer-Wise Relevance Propagation: An Overview"{}\\
+Gefunden auf: \\
+$\rightarrow$ \url{http://iphome.hhi.de/samek/pdf/MonXAI19.pdf}
+\label{itm:LRPOv}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Quellen}
+\begin{itemize}
+\item Quellen für Bilder, Implementierungshinweise:
+\item Montavon et al. : \\
+"{}Explaining nonlinear classification decisions with deep Taylor decomposition"{}\\
+Version mit Appendix, gefunden unter:\\
+$\rightarrow$ \url{https://arxiv.org/pdf/1512.02479v1.pdf}
+\label{itm:Mont17}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Quellen}
+\begin{itemize}
+\item Quellen zum weiteren Verständnis:
+\item Montavon: \\
+"{}Deep Taylor Decomposition, Conference Talk"{}\\
+Gefunden auf: \\
+$\rightarrow$ \url{https://www.youtube.com/watch?v=gy_Cb4Do_YE&t=939s}
+\label{itm:MontTalk}
+\item Montavon, Samek, Müller:  \\
+"{}Methods for interpreting and understanding deep neural networks"{}\\
+Gefunden auf: \\
+$\rightarrow$ \url{https://doi.org/10.1016/j.dsp.2017.10.011}
+\label{itm:MethodsPaper}
+\end{itemize}
+
+\end{frame}
+
+
+%\include{content_bonus}
+
+\end{document}

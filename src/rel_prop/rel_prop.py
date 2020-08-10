@@ -1,72 +1,100 @@
 import time
+from typing import Tuple
 
 import tensorflow as tf
 import numpy as np
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.applications.vgg16 import preprocess_input
 
-from src.plotting.plot_funcs import plot_rel_prop
+from src.plotting.plot_funcs import plot_rel_prop, plot_R_evo
 
 
 def run_rel_prop(classifier, eps, gamma, index, prediction):
-    # index = random.randint(0, classifier.test_images.shape[0])
+    """
+    Funktion, die die Relevance Propagation startet.
+    :param classifier: Objekt des Classifiers
+    :param eps: Parameter für LRP-epsilon
+    :param gamma: Parameter für LRP-gamma
+    :param index: Index des Inputs in Datensatz
+    :param prediction: Klassifizierung des Modells
+    :return: None
+    """
     model = classifier.model
-    print(len(classifier.test_images))
     image = classifier.test_images[index]*1.0
     label = classifier.test_labels[index]
     dataset = 'pascal_test'
+    no_bias = False
 
     timestamp = time.strftime('%d-%m_%Hh%M')
-
     label_indices = np.arange(0,len(label))[label == 1]
+    titles = []
+    relevances = []
+    evolutions_of_R = []
+
+    # LRP wird für alle korrekten Klassifizierungen durchgeführt
     for idx in label_indices:
-
-        titles = []
-        relevances = []
-
+        correct_label = classifier.classes[idx]
         persist_string = f'{dataset}_{index}_{timestamp}_class_{idx}'
 
+        # Maske wird erstellt, damit nur der Output der gegenwärtigen Klassifizierung genutzt wird
         img = np.array([image])
         mask = np.zeros(len(label), dtype=np.dtype(float))
         mask[idx] = 1.
 
-        if np.max(mask - prediction) > 1e-01:
-            tmp = mask-prediction
+        # Wenn Vorhersage zu schwach, überspringe
+        if np.max(mask - prediction) > 2e-01:
             continue
+
         mask = tf.constant(mask, dtype=tf.float32)
 
+        # Wenn eine Regel nicht gebraucht wird, einfach auskommentieren
         # LRP-0
-        titles.append('LRP-0')
-        relevance = rel_prop(model, img, mask)
+        titles.append(f'LRP-0')
+        relevance, relative_R_vals = rel_prop(model, img, mask, no_bias=no_bias)
         relevances.append(relevance)
+        evolutions_of_R.append(relative_R_vals)
 
         # LRP-eps
         titles.append(f'LRP-ε (ε={eps} * std)')
-        relevance = rel_prop(model, img, mask, eps=eps)
+        relevance, relative_R_vals = rel_prop(model, img, mask, eps=eps, no_bias=no_bias)
         relevances.append(relevance)
+        evolutions_of_R.append(relative_R_vals)
 
         # LRP-gamma
         titles.append(f'LRP-γ (γ={gamma})')
-        relevance = rel_prop(model, img, mask, gamma=gamma)
+        relevance, relative_R_vals = rel_prop(model, img, mask, gamma=gamma, no_bias=no_bias)
         relevances.append(relevance)
+        evolutions_of_R.append(relative_R_vals)
 
-        # LRP-composite
-        titles.append(f'LRP-Composite \neps = {2*eps}\ngamma = {2*gamma}')
-        relevance = rel_prop(model, img, mask, eps=2*eps, gamma=2*gamma, comb=True)
+        # LRP-Komposition
+        titles.append(f'LRP-Komposition')
+        relevance, relative_R_vals = rel_prop(model, img, mask, eps=2*eps, gamma=2*gamma, comb=True, no_bias=no_bias)
         relevances.append(relevance)
+        evolutions_of_R.append(relative_R_vals)
 
         # z+
-        titles.append('z+')
-        relevance = rel_prop(model, img, mask, z_pos=True)
+        titles.append(r'$z^+$')
+        relevance, relative_R_vals = rel_prop(model, img, mask, z_pos=True)
         relevances.append(relevance)
+        evolutions_of_R.append(relative_R_vals)
 
-        relevances = tuple(zip(titles, relevances))
+    relevances = tuple(zip(titles, relevances))
+    evolutions_of_R = tuple(zip(titles, evolutions_of_R))
+    try:
+        # plottet Verlauf der Summe über alle R
+        plot_R_evo(evolutions_of_R, persist_string, False)
 
-        plot_rel_prop(image, relevances, persist_string, False)
+        # plottet die Visualisierung
+        plot_rel_prop(image, correct_label, relevances, persist_string, False)
+        print('plotted')
+    except Exception as e:
+        raise e
+
+    # plot_rel_prop(image, correct_label, relevances, persist_string, True)
 
 
 def rel_prop(model: tf.keras.Sequential, image: np.ndarray, mask: np.ndarray, eps: float = 0, gamma: float = 0,
-             z_pos: bool = False, comb: bool = False) -> np.ndarray:
+             z_pos: bool = False, comb: bool = False, no_bias: bool = False) -> Tuple:
     """
     Berechnet für gegebenes Model und Bild die gesamte Relevance Propagation
     :param model: Model eines KNNS
@@ -74,14 +102,16 @@ def rel_prop(model: tf.keras.Sequential, image: np.ndarray, mask: np.ndarray, ep
     :param mask: Kanonischer Basisvektor, der zu erklärendes Label indiziert
     :param eps: Epsilon für LRP-eps
     :param gamma: Gamma für LRP-gamma
+    :param z_pos: Verwendung von z+
     :param comb: comb: Boolean für Abfrage, ob Komposition benutzt werden soll (Anpassung der Einteilung erforderlich)
+    :param no_bias: Verwendung des Bias
     :return: Werte der Relevance Propagation im Eingabeformat des Bildes (Ready2Plot)
     """
 
     image = preprocess_input(image.copy())
 
-    # Kopie des Models wird angefertigt, damit Gewichte durch Funktion forward() nicht für nachfolgende Anwendungen verändert
-    # werden. Letzte Aktivierung (Sigmoid) wird gelöscht.
+    # Kopie des Models wird angefertigt, damit Gewichte durch Funktion forward() nicht für nachfolgende Anwendungen
+    # verändert werden. Letzte Aktivierung (Sigmoid) wird gelöscht.
     new_model = tf.keras.models.clone_model(model)
     new_model.pop()
     new_model.set_weights(model.get_weights())
@@ -109,42 +139,47 @@ def rel_prop(model: tf.keras.Sequential, image: np.ndarray, mask: np.ndarray, ep
     output_const = tf.constant(outputs[-1])
     output_const = output_const * mask
 
+    relative_R_vals = [1.]
+    initial_R = output_const.numpy().sum()
+
     # Array zur Speicherung der Relevanz jeder Schicht wird initialisiert
     R = [None] * L + [output_const]
 
-    # Relevance Propagation wird gestartet
+    # Relevance Propagation wird gestartet. Von hinten nach vorne
     for l in range(1, L)[::-1]:
         layer = layers[l]
         output = outputs[l]
         R_old = R[l + 1]
-        output_layer_bool = l == L-1
 
         # Wenn MaxPooling verwendet wurde, ändere in AvgPooling
-        # TODO: Verfahren funktioniert scheinbar auch mit MaxPooling -> klären warum!
         if isinstance(layer, tf.keras.layers.MaxPool2D):
             layer = tf.keras.layers.AvgPool2D(layers[l].pool_size)
 
         # Wenn Layer zulässige Schicht ist (keine Aktivierungsfunktion o.ä., berechne R[l])
         if isinstance(layer, (tf.keras.layers.Conv2D, tf.keras.layers.Dense, tf.keras.layers.AvgPool2D,
                               tf.keras.layers.Flatten, tf.keras.layers.BatchNormalization)):
-            R[l] = calc_r(R_old, output, layer, l, eps, gamma, z_pos, comb, output_layer_bool)
+            R[l] = calc_r(R_old, output, layer, l, eps, gamma, z_pos, comb, no_bias)
         else:
             R[l] = R_old
 
-    # Reshape Output der Relevance Propagation zu Shape des Inputs
+        if isinstance(layer, (tf.keras.layers.Dense, tf.keras.layers.Conv2D)):
+            relative_R_vals.append(R[l].numpy().sum() / initial_R)
 
+    # Für letzten Schritt wird z^B verwendet
     R[0] = z_b(R[1], outputs[0], layers[0])
+    relative_R_vals.append(R[0].numpy().sum() / initial_R)
 
+    # Reshape Output der Relevance Propagation zu Shape des Inputs
     relevance = np.reshape(R[0], image.shape)
 
     # Addiere Werte über Farbkanäle
     relevance = relevance.sum(axis=3)
 
-    return relevance
+    return relevance, relative_R_vals
 
 
 def calc_r(R: np.ndarray, prev_output: np.ndarray, layer, counter: int, eps: float, gamma: float,
-           z_pos: bool, comb: bool, output_layer: bool = False) \
+           z_pos: bool, comb: bool, no_bias: bool) \
         -> np.ndarray:
     """
     Ausführung eines Schrittes der Relevance Propagation
@@ -154,7 +189,9 @@ def calc_r(R: np.ndarray, prev_output: np.ndarray, layer, counter: int, eps: flo
     :param counter: 'Nummer' des Layers, relevant bei Komposition
     :param eps: Epsilon für LRP-eps
     :param gamma: Gamma für LRP-gamma
+    :param z_pos: Verwendung z+
     :param comb: Boolean für Abfrage, ob Komposition benutzt werden soll (Anpassung der Einteilung erforderlich)
+    :param no_bias: Verwendung Bias
     :return: Relevance für vorherige Schicht
     """
 
@@ -163,29 +200,32 @@ def calc_r(R: np.ndarray, prev_output: np.ndarray, layer, counter: int, eps: flo
 
     # Check, ob Komposition berechnet werden soll
     if comb:
-        if isinstance(layer, tf.keras.layers.Dense):
+        if isinstance(layer, (tf.keras.layers.Dense, tf.keras.layers.AvgPool2D,
+                      tf.keras.layers.Flatten, tf.keras.layers.BatchNormalization)):
             eps = 0
             gamma = 0
         elif 10 <= counter:
             gamma = 0
         else:
             eps = 0
-    #
-    # LRP-gamma wird angewendet
-    #
+
+    if isinstance(layer, (tf.keras.layers.AvgPool2D, tf.keras.layers.Flatten, tf.keras.layers.BatchNormalization)):
+        eps = 0
+        gamma = 0
+
     # GradientTape wird aufgezeichnet
     with tf.GradientTape() as gt:
         # forward pass / step 1
         gt.watch(prev_output)
 
         if z_pos:
-            z = forward(prev_output=prev_output, layer=layer, c=gamma, mode='pos', output_layer=output_layer)
+            z = forward(prev_output=prev_output, layer=layer, c=gamma, mode='pos', no_bias=False)
         else:
-            z = forward(prev_output=prev_output, layer=layer, c=gamma, mode='gamma', output_layer=output_layer)
+            z = forward(prev_output=prev_output, layer=layer, c=gamma, mode='gamma', no_bias=no_bias)
 
         # eps = eps*std
         eps = tf.constant(eps * (tf.pow(tf.pow(z, 2).numpy().mean(), 0.5)))
-        z = z + eps
+        z = z + tf.sign(z) * eps
 
         # step 2
         s = tf.divide(R, z)
@@ -206,7 +246,7 @@ def calc_r(R: np.ndarray, prev_output: np.ndarray, layer, counter: int, eps: flo
     return R_new
 
 
-def z_b(R: np.ndarray, prev_output: np.ndarray, layer, ) -> np.ndarray:
+def z_b(R: np.ndarray, prev_output: np.ndarray, layer) -> np.ndarray:
     """
     Ausführung eines Schrittes der Relevance Propagation
     :param R: Relevance der nachfolgenden Schicht (R[l+1])
@@ -217,10 +257,12 @@ def z_b(R: np.ndarray, prev_output: np.ndarray, layer, ) -> np.ndarray:
 
     # Output der vorherigen Schicht wird in TF-Konstante transformiert
     prev_output = tf.constant(prev_output)
+
     low_bound = tf.constant(np.zeros(prev_output.shape))
+    low_bound = preprocess_input(low_bound)
 
     high_bound = tf.constant(np.ones(prev_output.shape) * 255.)
-
+    high_bound = preprocess_input(high_bound)
     # GradientTape wird aufgezeichnet
     with tf.GradientTape() as gt:
         # forward pass / step 1
@@ -228,13 +270,15 @@ def z_b(R: np.ndarray, prev_output: np.ndarray, layer, ) -> np.ndarray:
         gt.watch(low_bound)
         gt.watch(high_bound)
 
-        z = forward(prev_output, layer)
-        lw = forward(low_bound, layer, mode='pos')
-        hw = forward(high_bound, layer, mode='neg')
+        bias_term = layer.bias.numpy()
+
+        z = forward(prev_output, layer, c=0, mode='gamma', no_bias=True)
+        lw = forward(low_bound, layer, mode='pos', no_bias=True)
+        hw = forward(high_bound, layer, mode='neg', no_bias=True)
 
         # eps = eps*std
 
-        z = z - lw - hw
+        z = z - lw - hw + bias_term
 
         # step 2
         s = tf.divide(R, z)
@@ -257,7 +301,7 @@ def z_b(R: np.ndarray, prev_output: np.ndarray, layer, ) -> np.ndarray:
 
 
 def forward(prev_output: tf.constant, layer: tf.keras.layers.Layer, c: int = 0,
-            mode: str = None, output_layer: bool = False) -> tf.keras.layers.Layer:
+            mode: str = None, no_bias: bool = False) -> tf.keras.layers.Layer:
     """
     Wendet Transformation auf Gewichte der Schicht an. Momentan forward()(w) = w + c * w^+
     :param layer: Layer eines KNNs
@@ -272,10 +316,11 @@ def forward(prev_output: tf.constant, layer: tf.keras.layers.Layer, c: int = 0,
     weights = layer.get_weights().copy()
 
     # falls positiver Bias auftritt, behandele diesen wie zusätzliche Neuronen -> max(0, b_i) forward pass hinzufügen
-    bias_term = 0
 
     if isinstance(layer, tf.keras.layers.Conv2D) or isinstance(layer, tf.keras.layers.Dense):
-        bias_term = np.maximum(0, layer.bias.numpy())
+
+        if no_bias:
+            weights[1] = weights[1]*0.
         try:
 
             if mode == 'gamma':
@@ -296,7 +341,7 @@ def forward(prev_output: tf.constant, layer: tf.keras.layers.Layer, c: int = 0,
                 pass
 
             else:
-                print('Falsche Eingabe für "mode" bei Aufruf von forward()(.)')
+                print('Falsche Eingabe für "mode" bei Aufruf von forward(.)')
 
         except IndexError:
             # TODO: Logging im gesamten Projekt implementieren
@@ -304,9 +349,7 @@ def forward(prev_output: tf.constant, layer: tf.keras.layers.Layer, c: int = 0,
 
     layer.activation = None
 
-    out = layer(prev_output) + bias_term
-    if output_layer:
-        out = tf.keras.activations.relu(out)
+    out = layer(prev_output)
 
     layer.set_weights(weights)
 
