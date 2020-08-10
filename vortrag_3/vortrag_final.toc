@@ -1,9 +1,0 @@
-\beamer@endinputifotherversion {3.36pt}
-\select@language {ngerman}
-\beamer@sectionintoc {1}{Einleitung}{3}{0}{1}
-\beamer@sectionintoc {2}{Implementierung eines CNN f\IeC {\"u}r den Pascal VOC}{4}{0}{2}
-\beamer@sectionintoc {3}{Taylor Decomposition}{10}{0}{3}
-\beamer@sectionintoc {4}{Herleitung zweier z-Regeln}{17}{0}{4}
-\beamer@sectionintoc {5}{Deep Taylor Decomposition}{23}{0}{5}
-\beamer@sectionintoc {6}{Ergebnisse auf Pascal-Datensatz}{33}{0}{6}
-\beamer@sectionintoc {7}{Literatur}{37}{0}{7}

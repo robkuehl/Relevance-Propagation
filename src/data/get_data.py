@@ -5,6 +5,7 @@ from pathlib import Path
 from sklearn.model_selection import train_test_split
 import numpy as np
 from sklearn.preprocessing import OneHotEncoder
+import random
 
 dirname = os.path.dirname(__file__)
 
@@ -67,13 +68,14 @@ def get_fashion_mnist(encoded:bool, training:bool, test_size=0.2):
 def get_mnist():
     filename = os.path.join(dirname, '../../data/raw/mnist.pickle')
     if not os.path.isfile(Path(filename)):
-        (train_images, train_labels), (test_images, test_labels) = fashion_mnist.load_data()
+        (train_images, train_labels), (test_images, test_labels) = mnist.load_data()
         images = np.asarray(list(test_images)+list(train_images))
         labels = np.asarray(list(test_labels)+list(train_labels))
         
-        data = {'images':images,
-                    'labels':labels,
-                    }
+        data = {
+                'images':images,
+                'labels':labels,
+                }
         with open(filename, 'wb') as f:
             pickle.dump(data, f)
     else:
@@ -141,6 +143,26 @@ def get_cifar10(encoded:bool, training:bool, test_size=0.2):
 
 
     
-    
-
-    
+def get_mnist_binary(class_nb:int, test_size):
+        sample_size = 3
+        
+        data, _ = get_mnist()
+        
+        images = data['images']
+        labels = data['labels']
+        labels = (labels==class_nb).astype(int)
+            
+        # reduce train dataset
+        one_indices = [i for i in range(labels.shape[0]) if labels[i]==1]
+        zero_indices = [i for i in range(labels.shape[0]) if labels[i]==0]
+        sampling = random.choices(zero_indices, k=sample_size*len(one_indices))
+        indices = one_indices + sampling
+        print("Number of train indices: ", len(indices))
+            
+        images = np.asarray([images[i] for i in indices])
+        labels = np.asarray([labels[i] for i in indices])
+            
+        
+        train_images, test_images, train_labels, test_labels = train_test_split(images, labels, test_size=test_size, random_state=42)
+        
+        return train_images, test_images, train_labels, test_labels
