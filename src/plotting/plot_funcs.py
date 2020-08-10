@@ -1,11 +1,12 @@
 import os
-from typing import Any, Tuple
+from typing import Tuple
 
 import plotly.express as px
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-from src.rel_prop.help_func import MidpointNormalize
+from src.plotting.help_func import MidpointNormalize, OOMFormatter, get_scientific_order
 
 
 def plotly_mnist_image(image):
@@ -19,7 +20,7 @@ def plot_rel_prop(image: np.ndarray, correct_label: str, relevances: Tuple, pers
 
     # plt.suptitle(f'Erklärung für die Klassifizierung: {correct_label}')
 
-    plt.subplot(2, n_col, 1)
+    plt.subplot(1, num_pics+1, 1)
     plt.title('Input')
     fig = plt.imshow(np.array(image, dtype=np.dtype(int)))
     fig.axes.get_xaxis().set_visible(False)
@@ -30,26 +31,38 @@ def plot_rel_prop(image: np.ndarray, correct_label: str, relevances: Tuple, pers
     # rel_min = vals.min()
 
     for i in range(0, num_pics):
-        plt.subplot(2, n_col, i+2)
+        plt.subplot(1, num_pics+1, i+2)
+        plt.title(relevances[i][0], fontsize=12)
         relevance = relevances[i][1][0]
-
-        fig = plt.imshow(relevance, cmap='seismic',
+        ax = plt.gca()
+        fig = ax.imshow(relevance, cmap='seismic',
                          norm=MidpointNormalize(midpoint=0, vmin=relevance.min(), vmax=relevance.max()))
+        # divider = make_axes_locatable(ax)
+        # cax = divider.append_axes("right", size="5%", pad=0.05)
 
-        plt.colorbar(fig)
-        plt.tick_params(
+        order = get_scientific_order(vmin=relevance.min(), vmax=relevance.max())
+
+        # plt.colorbar(fig, cax=cax, format=OOMFormatter(order, mathText=False))
+        ax.tick_params(
             axis='x',  # changes apply to the x-axis
             which='both',  # both major and minor ticks are affected
             bottom=False,  # ticks along the bottom edge are off
             top=False,  # ticks along the top edge are off
             labelbottom=False)  # labels along the bottom edge are off
+        ax.tick_params(
+            axis='y',  # changes apply to the x-axis
+            which='both',  # both major and minor ticks are affected
+            bottom=False,  # ticks along the bottom edge are off
+            top=False,  # ticks along the top edge are off
+            labelbottom=False)  # labels along the bottom edge are off
 
-        if i+2 > n_col:
-            plt.xlabel(relevances[i][0], fontsize=12)
-        else:
-            fig.axes.get_xaxis().set_label('')
-            plt.title(relevances[i][0], fontsize=12)
+        # if i+2 > n_col:
+        #     plt.xlabel(relevances[i][0], fontsize=12)
+        # else:
+            # plt.title(relevances[i][0], fontsize=12)
+
         fig.axes.get_yaxis().set_visible(False)
+        # fig.axes.get_xaxis().set_visible(False)
 
     if not show:
         fig_path = os.path.join(os.path.dirname(__file__), '..', '..', 'figures', persist_string)
@@ -58,6 +71,7 @@ def plot_rel_prop(image: np.ndarray, correct_label: str, relevances: Tuple, pers
         plt.cla()
         plt.clf()
     else:
+        plt.subplots_adjust(left=0.125, wspace=0.25)
         plt.show()
 
 

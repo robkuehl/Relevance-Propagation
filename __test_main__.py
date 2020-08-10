@@ -1,4 +1,4 @@
-from src.rel_prop.help_func import *
+from src.plotting.help_func import *
 import os
 
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
