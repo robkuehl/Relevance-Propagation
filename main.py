@@ -24,7 +24,8 @@ classifier = p_e.evaluate_config(config_nb=1)
 # mce.evaluate_config(0)
 
 
-classifier = main_load_model('alle_Klassen_ohne_BatchNorm')
+classifier = p_e.load_model('alle_Klassen_ohne_BatchNorm')
+
 test_images = classifier.test_images
 test_labels_df = classifier.test_labels_df
 test_labels = test_labels_df.values
