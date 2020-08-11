@@ -7,7 +7,7 @@ import numpy as np
 from tensorflow.keras.optimizers import SGD
  
 
-class Montavon_Model:
+class Montavon_Classifier:
     
     def __init__(self, class_nb: int):
         self.class_nb = class_nb
@@ -19,8 +19,9 @@ class Montavon_Model:
             'train_images':self.train_images,
             'test_images':self.test_images,
             'train_labels': self.train_labels,
-            'test_labels': self.test_labelsas
+            'test_labels': self.test_labels
         }
+        self.classes = set(list(self.train_labels))
         
 
     """
@@ -60,6 +61,7 @@ class Montavon_Model:
     
     """
     Definiert eine Matrix, die inputDim mittels Sum Pooling auf outputDim reduziert
+    Wird ausschließlich in set_model verwendet 
     """
     def getSumPoolingWeights(self, inputDim, outputDim):
         #Bestimme die Anzahl an Neuronen, die auf ein Outputneuron summiert werden
@@ -87,7 +89,8 @@ class Montavon_Model:
             verbose=2
         )
 
-    def predict(self, image):
+    def predict_train_image(self, index):
+        image = self.train_labels[index]
         pred = int(self.model.predict(np.array([image]))[0][0])
         return pred
     

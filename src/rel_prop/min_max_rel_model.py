@@ -6,14 +6,20 @@ from tensorflow.keras.layers import Dense
 import numpy as np
 from src.data.get_data import get_mnist
 from tensorflow.keras.optimizers import SGD
+from os.path import join as pathjoin
+import os
+from src.rel_prop.minmax_utils import get_higher_relevances
 
 class Nested_Regressor():
     
-    def __init__(self, input_shape, use_bias, neuron_index, train_images):
+    def __init__(self, input_shape, use_bias, neuron_index, train_images, true_relevances, higher_relevances=None):
         self.input_shape = input_shape
         self.use_bias = use_bias
         self.neuron_index = neuron_index
         self.train_images = train_images
+        self.true_relevances = true_relevances
+        self.higher_relevances = higher_relevances
+        self.storage_path = pathjoin(os.path.dirname(__file__), "..", "..", "models", "minmax_submodels")
         
     
     def approx_model(self):
@@ -30,45 +36,45 @@ class Nested_Regressor():
         self.model = model
         
     def fit_approx_model(self):
-        self.model.fit(x=self.train_images, y=self.y_train, batch_size=32, epochs=300)
+        self.model.fit(x=self.train_images, y=self.true_relevances, batch_size=32, epochs=300)
         
-    def load_relevances(self):
-        pass
-        # self.y_train = relevances
-    
-    def load_higher_relevances(self):
-        pass
     
     def save_model(self):
-        # TODO: Save in /models/minmax_submodels by index
-        pass
+        self.model.save(pathjoin(self.storage_path, "nested_regressor_{}.h5".format(self.neuron_index)))
     
     def load_model(self):
-        # TODO: Load from /models/minmax_submodels by index
-        pass
+        self.model = tensorflow.keras.models.load_model(pathjoin(self.storage_path, "nested_regressor_{}.h5".format(self.neuron_index)))
     
         
         
 
 class MinMaxModel():
     
-    def __init__(self, montavon_model:tensorflow.keras.models.Sequential, data):
-        self.montavon_model = montavon_model
-        self.data = data
+    def __init__(self, classifier):
+        self.classifier = classifier
         self.regressors = []
+        self.train_images = classifier.train_images
+        self.true_relevances, self.higher_relevances = get_higher_relevances(classifier, recalc=False, use_higher_rel=False)
     
     def minmax_rel_prop(self):
-        dls = [layer for layer in self.montavon_model.layers if type(layer) == Dense]
+        dls = [layer for layer in self.classifier.model.layers if type(layer) == Dense]
         nb_neurons = dls[1].weights[0].shape[0]
         for neuron_index in range(0,nb_neurons):
-            nr = Nested_Regressor(input_shape=self.data['train_images'][0].shape, use_bias=False, neuron_index=neuron_index, train_images=self.data['train_images'])
+            nr = Nested_Regressor(
+                input_shape=self.train_images[0].shape, 
+                use_bias=False, 
+                neuron_index=neuron_index, 
+                train_images=self.train_images,
+                true_relevances=list(self.true_relevances[neuron_index])
+                )
             self.regressors.append(nr)
+            
         for nr in self.regressors:
             nr.fit_approx_model()
+            #nr.load_model()
         for nr in self.regressors:
             # Führe relprop aus
-            # parallelisieren
-            pass
+            
         # addiere rel_prop auf
             
             

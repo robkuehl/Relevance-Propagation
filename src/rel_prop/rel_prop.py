@@ -49,32 +49,34 @@ def run_rel_prop(classifier, eps, gamma, index, prediction):
 
         # Wenn eine Regel nicht gebraucht wird, einfach auskommentieren
         # LRP-0
-        titles.append(f'LRP-0')
-        relevance, relative_R_vals = rel_prop(model, img, mask, no_bias=no_bias)
-        relevances.append(relevance)
-        evolutions_of_R.append(relative_R_vals)
+        
+        
+        # titles.append(f'LRP-0')
+        # relevance, relative_R_vals = rel_prop(model, img, mask, no_bias=no_bias)
+        # relevances.append(relevance)
+        # evolutions_of_R.append(relative_R_vals)
 
-        # LRP-eps
-        titles.append(f'LRP-ε (ε={eps} * std)')
-        relevance, relative_R_vals = rel_prop(model, img, mask, eps=eps, no_bias=no_bias)
-        relevances.append(relevance)
-        evolutions_of_R.append(relative_R_vals)
+        # # LRP-eps
+        # titles.append(f'LRP-ε (ε={eps} * std)')
+        # relevance, relative_R_vals = rel_prop(model, img, mask, eps=eps, no_bias=no_bias)
+        # relevances.append(relevance)
+        # evolutions_of_R.append(relative_R_vals)
 
-        # LRP-gamma
-        titles.append(f'LRP-γ (γ={gamma})')
-        relevance, relative_R_vals = rel_prop(model, img, mask, gamma=gamma, no_bias=no_bias)
-        relevances.append(relevance)
-        evolutions_of_R.append(relative_R_vals)
+        # # LRP-gamma
+        # titles.append(f'LRP-γ (γ={gamma})')
+        # relevance, relative_R_vals = rel_prop(model, img, mask, gamma=gamma, no_bias=no_bias)
+        # relevances.append(relevance)
+        # evolutions_of_R.append(relative_R_vals)
 
-        # LRP-Komposition
-        titles.append(f'LRP-Komposition')
-        relevance, relative_R_vals = rel_prop(model, img, mask, eps=2*eps, gamma=2*gamma, comb=True, no_bias=no_bias)
-        relevances.append(relevance)
-        evolutions_of_R.append(relative_R_vals)
+        # # LRP-Komposition
+        # titles.append(f'LRP-Komposition')
+        # relevance, relative_R_vals = rel_prop(model, img, mask, eps=2*eps, gamma=2*gamma, comb=True, no_bias=no_bias)
+        # relevances.append(relevance)
+        # evolutions_of_R.append(relative_R_vals)
 
         # z+
         titles.append(r'$z^+$')
-        relevance, relative_R_vals = rel_prop(model, img, mask, z_pos=True)
+        relevance, relative_R_vals, R = rel_prop(model, img, mask, z_pos=True)
         relevances.append(relevance)
         evolutions_of_R.append(relative_R_vals)
 
@@ -91,6 +93,7 @@ def run_rel_prop(classifier, eps, gamma, index, prediction):
         raise e
 
     # plot_rel_prop(image, correct_label, relevances, persist_string, True)
+    return R
 
 
 def rel_prop(model: tf.keras.Sequential, image: np.ndarray, mask: np.ndarray, eps: float = 0, gamma: float = 0,
@@ -175,7 +178,7 @@ def rel_prop(model: tf.keras.Sequential, image: np.ndarray, mask: np.ndarray, ep
     # Addiere Werte über Farbkanäle
     relevance = relevance.sum(axis=3)
 
-    return relevance, relative_R_vals
+    return relevance, relative_R_vals, R
 
 
 def calc_r(R: np.ndarray, prev_output: np.ndarray, layer, counter: int, eps: float, gamma: float,
