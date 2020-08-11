@@ -9,7 +9,7 @@ from tensorflow.keras.applications.vgg16 import preprocess_input
 from src.plotting.plot_funcs import plot_rel_prop, plot_R_evo
 
 
-def run_rel_prop(classifier, eps, gamma, index, prediction):
+def run_rel_prop(classifier, test_images, test_labels, eps, gamma, index, prediction):
     """
     Funktion, die die Relevance Propagation startet.
     :param classifier: Objekt des Classifiers
@@ -20,8 +20,8 @@ def run_rel_prop(classifier, eps, gamma, index, prediction):
     :return: None
     """
     model = classifier.model
-    image = classifier.test_images[index]*1.0
-    label = classifier.test_labels[index]
+    image = test_images[index]*1.0
+    label = test_labels[index]
     dataset = 'pascal_test'
     no_bias = False
 

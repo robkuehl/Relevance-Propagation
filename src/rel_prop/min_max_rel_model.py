@@ -9,6 +9,7 @@ from tensorflow.keras.optimizers import SGD
 from os.path import join as pathjoin
 import os
 from src.rel_prop.minmax_utils import get_higher_relevances
+from src.models.Binary_Mnist_Model import Montavon_Classifier
 
 class Nested_Regressor():
     
@@ -50,7 +51,7 @@ class Nested_Regressor():
 
 class MinMaxModel():
     
-    def __init__(self, classifier):
+    def __init__(self, classifier:Montavon_Classifier):
         self.classifier = classifier
         self.regressors = []
         self.train_images = classifier.train_images
@@ -72,10 +73,10 @@ class MinMaxModel():
         for nr in self.regressors:
             nr.fit_approx_model()
             #nr.load_model()
-        for nr in self.regressors:
-            # Führe relprop aus
             
-        # addiere rel_prop auf
+        # TODO: Kombinieren von z+ für tiefe Schichten mit RelProp für Aprroximationsmodelle
+        for nr in self.regressors:
+            pass
             
             
         

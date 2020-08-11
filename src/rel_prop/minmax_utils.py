@@ -22,7 +22,7 @@ Speichern der Relevances vom 3. Layer
 Abfragen ob Laden oder erzeugen
 
 """
-def get_higher_relevances(classifier, recalc:bool, use_higher_rel:bool):
+def get_higher_relevances(classifier:Montavon_Classifier, recalc:bool, use_higher_rel:bool):
     dirname = os.path.dirname(__file__)
     storage_path = pathjoin(dirname, "..", "..", "data", "min_max_relevances")
     if (isfile(pathjoin(storage_path, "true_relevances.pickle")) and isfile(pathjoin(storage_path, "higher_relevances.pickle"))) and not recalc:
@@ -36,7 +36,12 @@ def get_higher_relevances(classifier, recalc:bool, use_higher_rel:bool):
         higher_relevances = []
         indices = range(0, len(list(classifier.train_images)))
         for index in indices:
-            relevances = run_rel_prop(classifier=classifier, eps=0, gamma=0, index=index, prediction=classifier.predict_train_image(index))
+            relevances = run_rel_prop(classifier=classifier,
+                                      test_images=classifier.train_images,
+                                      test_labels=classifier.test_labels,
+                                      eps=0, gamma=0, 
+                                      index=index, 
+                                      prediction=classifier.predict_train_image(index))
             r_true = relevances[-3].reshape(-1,1)
             true_relevances.append(r_true)
             high_rel = relevances[-2].reshape(-1,1)
