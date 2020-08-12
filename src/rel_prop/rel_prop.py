@@ -9,17 +9,17 @@ from tensorflow.keras.applications.vgg16 import preprocess_input
 from src.plotting.plot_funcs import plot_rel_prop, plot_R_evo
 
 
-def run_rel_prop(classifier, test_images, test_labels, eps, gamma, index, prediction):
+def run_rel_prop(model, test_images, test_labels, classes, eps, gamma, index, prediction):
     """
     Funktion, die die Relevance Propagation startet.
-    :param classifier: Objekt des Classifiers
+    :param model: Keras Model
     :param eps: Parameter für LRP-epsilon
     :param gamma: Parameter für LRP-gamma
     :param index: Index des Inputs in Datensatz
     :param prediction: Klassifizierung des Modells
     :return: None
     """
-    model = classifier.model
+    model = model
     image = test_images[index]*1.0
     label = test_labels[index]
     dataset = 'pascal_test'
@@ -33,7 +33,7 @@ def run_rel_prop(classifier, test_images, test_labels, eps, gamma, index, predic
 
     # LRP wird für alle korrekten Klassifizierungen durchgeführt
     for idx in label_indices:
-        correct_label = classifier.classes[idx]
+        correct_label = classes[idx]
         persist_string = f'{dataset}_{index}_{timestamp}_class_{idx}'
 
         # Maske wird erstellt, damit nur der Output der gegenwärtigen Klassifizierung genutzt wird

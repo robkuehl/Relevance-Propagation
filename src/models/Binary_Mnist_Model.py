@@ -90,9 +90,16 @@ class Montavon_Classifier:
         )
 
     def predict_train_image(self, index):
-        image = self.train_labels[index]
+        image = self.train_images[index]
         pred = int(self.model.predict(np.array([image]))[0][0])
         return pred
+    
+    
+    def predict_test_image(self, index):
+        image = self.test_images[index]
+        pred = int(self.model.predict(np.array([image]))[0][0])
+        return pred
+    
     
     def non_trivial_accuracy(self):
         answers = []

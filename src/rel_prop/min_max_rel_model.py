@@ -10,17 +10,16 @@ from os.path import join as pathjoin
 import os
 from src.rel_prop.minmax_utils import get_higher_relevances
 from src.models.Binary_Mnist_Model import Montavon_Classifier
+from src.rel_prop.rel_prop import run_rel_prop
 
+filepath = os.path.dirname(__file__)
 class Nested_Regressor():
     
-    def __init__(self, input_shape, use_bias, neuron_index, train_images, true_relevances, higher_relevances=None):
+    def __init__(self, input_shape, use_bias, neuron_index):
         self.input_shape = input_shape
         self.use_bias = use_bias
         self.neuron_index = neuron_index
-        self.train_images = train_images
-        self.true_relevances = true_relevances
-        self.higher_relevances = higher_relevances
-        self.storage_path = pathjoin(os.path.dirname(__file__), "..", "..", "models", "minmax_submodels")
+        self.storage_path = pathjoin(filepath, "..", "..", "models", "minmax_submodels")
         
     
     def approx_model(self):
@@ -32,12 +31,12 @@ class Nested_Regressor():
         model.compile(
             optimizer = SGD(learning_rate=0.0001),
             loss='mse',
-            metrcis=['loss']
+            metrics=['loss']
         )
         self.model = model
         
-    def fit_approx_model(self):
-        self.model.fit(x=self.train_images, y=self.true_relevances, batch_size=32, epochs=300)
+    def fit_approx_model(self, train_images, true_relevances, higher_relevances=None):
+        self.model.fit(x=train_images, y=true_relevances, batch_size=32, epochs=300)
         
     
     def save_model(self):
@@ -53,30 +52,61 @@ class MinMaxModel():
     
     def __init__(self, classifier:Montavon_Classifier):
         self.classifier = classifier
-        self.regressors = []
+        self.nested_regressors = []
         self.train_images = classifier.train_images
         self.true_relevances, self.higher_relevances = get_higher_relevances(classifier, recalc=False, use_higher_rel=False)
     
-    def minmax_rel_prop(self):
-        dls = [layer for layer in self.classifier.model.layers if type(layer) == Dense]
-        nb_neurons = dls[1].weights[0].shape[0]
-        for neuron_index in range(0,nb_neurons):
-            nr = Nested_Regressor(
-                input_shape=self.train_images[0].shape, 
-                use_bias=False, 
-                neuron_index=neuron_index, 
-                train_images=self.train_images,
-                true_relevances=list(self.true_relevances[neuron_index])
-                )
-            self.regressors.append(nr)
+    def train_min_max(self, pretrained:bool):
+            dls = [layer for layer in self.classifier.model.layers if type(layer) == Dense]
+            nb_neurons = dls[1].weights[0].shape[0]
+            for neuron_index in range(0,nb_neurons):
+                nr = Nested_Regressor(
+                        input_shape=self.train_images[0].shape, 
+                        use_bias=False, 
+                        neuron_index=neuron_index, 
+                    )
+                self.nested_regressors.append(nr)
+                
+            for nr in self.nested_regressors:
+                if pretrained==False:
+                    nr.fit_approx_model(train_images=self.train_images, true_relevances=list(self.true_relevances[nr.neuron_index]))
+                    nr.save_model()
+                else:
+                    nr.load_model()
+                
+                
+    def min_max_rel_prop(self, index):
+        relevances = []
+        # TODO: Parallelisieren
+        z_plus_relevances = run_rel_prop(
+                                         model = self.classifier.model,
+                                         test_images = self.classifier.test_images,
+                                         test_labels = self.classifier.test_labels,
+                                         classes = self.classifier.classes,
+                                         eps=0,
+                                         gamma=0,
+                                         index=index,
+                                         prediction = self.classifier.predict_test_image(index)
+                                         )[-3]
+        
+        # Kombinieren von z+ für tiefe Schichten mit RelProp für Aprroximationsmodelle
+        for nr in self.nested_regressors:
+            # TODO: Parallelisieren
+            relevance = run_rel_prop(
+                                    model = nr.model,
+                                    test_images = self.classifier.test_images,
+                                    test_labels = self.classifier.test_labels,
+                                    classes = self.classifier.classes,
+                                    eps=0,
+                                    gamma=0,
+                                    index=index,
+                                    prediction = z_plus_relevances[nr.index]
+                                    )
+            relevances.append(relevance)
+        
+        final_relevance = sum(relevances)
+        return final_relevance
             
-        for nr in self.regressors:
-            nr.fit_approx_model()
-            #nr.load_model()
-            
-        # TODO: Kombinieren von z+ für tiefe Schichten mit RelProp für Aprroximationsmodelle
-        for nr in self.regressors:
-            pass
             
             
         

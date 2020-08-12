@@ -2,7 +2,6 @@ from src.models.Binary_Mnist_Model import Montavon_Classifier
 from src.rel_prop.rel_prop import run_rel_prop
 import tensorflow
 from os.path import join as pathjoin
-import pickle
 from os.path import isfile
 import os
 import numpy as np
@@ -13,7 +12,7 @@ import numpy as np
 #    Momentan noch Hardgecoded fuer das Sec. III Modell
 
 """
-Speichern der Relevances vom 2. Layer in pickle Datei
+Speichern der Relevances vom 2. Layer in numpy Datei
     - pro Neuron ein Zelen-Vektor mit Relevance für jedes Bild -> 1 Array
     - speichern als Numpy Matrix shape = (#Neuronen x Bilder)
 Speichern der Relevances vom 3. Layer 
@@ -25,20 +24,21 @@ Abfragen ob Laden oder erzeugen
 def get_higher_relevances(classifier:Montavon_Classifier, recalc:bool, use_higher_rel:bool):
     dirname = os.path.dirname(__file__)
     storage_path = pathjoin(dirname, "..", "..", "data", "min_max_relevances")
-    if (isfile(pathjoin(storage_path, "true_relevances.pickle")) and isfile(pathjoin(storage_path, "higher_relevances.pickle"))) and not recalc:
-            with open(pathjoin(storage_path, "true_relevances.pickle")) as file:
-                true_relevances = pickle.load(file)
+    if (isfile(pathjoin(storage_path, "true_relevances.npy")) and isfile(pathjoin(storage_path, "higher_relevances.npy"))) and not recalc:
+            with open(pathjoin(storage_path, "true_relevances.npy")) as file:
+                true_relevances = np.load(file)
         
-            with open(pathjoin(storage_path, "higher_relevances.pickle")) as file:
-                higher_relevances = pickle.load(file)
+            with open(pathjoin(storage_path, "higher_relevances.npy")) as file:
+                higher_relevances = np.load(file)
     else:
         true_relevances = []
         higher_relevances = []
         indices = range(0, len(list(classifier.train_images)))
         for index in indices:
-            relevances = run_rel_prop(classifier=classifier,
+            relevances = run_rel_prop(model=classifier.model,
                                       test_images=classifier.train_images,
-                                      test_labels=classifier.test_labels,
+                                      test_labels=classifier.train_labels,
+                                      classes=classifier.classes,
                                       eps=0, gamma=0, 
                                       index=index, 
                                       prediction=classifier.predict_train_image(index))
@@ -50,11 +50,11 @@ def get_higher_relevances(classifier:Montavon_Classifier, recalc:bool, use_highe
         higher_relevances = np.column_stack(higher_relevances)
         true_relevances = np.column_stack(true_relevances)
         
-        with open(pathjoin(storage_path, "true_relevances.pickle")) as file:
-            pickle.dump(true_relevances, file)
+        with open(pathjoin(storage_path, "true_relevances.npy")) as file:
+            np.dump(true_relevances, file)
             
-        with open(pathjoin(storage_path, "higher_relevances.pickle")) as file:
-            pickle.dump(higher_relevances, file)
+        with open(pathjoin(storage_path, "higher_relevances.npy")) as file:
+            np.dump(higher_relevances, file)
     
     if use_higher_rel:       
         return true_relevances, higher_relevances
