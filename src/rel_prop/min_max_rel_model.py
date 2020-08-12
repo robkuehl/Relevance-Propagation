@@ -20,6 +20,7 @@ class Nested_Regressor():
         self.use_bias = use_bias
         self.neuron_index = neuron_index
         self.storage_path = pathjoin(filepath, "..", "..", "models", "minmax_submodels")
+        print('Created nested regressor for neuron with index {}'.format(neuron_index))
         
     
     def approx_model(self):
@@ -36,6 +37,7 @@ class Nested_Regressor():
         self.model = model
         
     def fit_approx_model(self, train_images, true_relevances, higher_relevances=None):
+        print('Fit model of nested regressor with neuron index {}'.format(self.neuron_index))
         self.model.fit(x=train_images, y=true_relevances, batch_size=32, epochs=300)
         
     
@@ -50,32 +52,35 @@ class Nested_Regressor():
 
 class MinMaxModel():
     
-    def __init__(self, classifier:Montavon_Classifier):
+    def __init__(self, classifier:Montavon_Classifier, use_higher_rel=False):
         self.classifier = classifier
         self.nested_regressors = []
         self.train_images = classifier.train_images
-        self.true_relevances, self.higher_relevances = get_higher_relevances(classifier, recalc=False, use_higher_rel=False)
+        self.true_relevances, self.higher_relevances = get_higher_relevances(classifier, recalc=False, use_higher_rel=use_higher_rel)
+        print('Created MinMaxModel')
     
     def train_min_max(self, pretrained:bool):
-            dls = [layer for layer in self.classifier.model.layers if type(layer) == Dense]
-            nb_neurons = dls[1].weights[0].shape[0]
-            for neuron_index in range(0,nb_neurons):
-                nr = Nested_Regressor(
-                        input_shape=self.train_images[0].shape, 
-                        use_bias=False, 
-                        neuron_index=neuron_index, 
-                    )
-                self.nested_regressors.append(nr)
-                
-            for nr in self.nested_regressors:
-                if pretrained==False:
-                    nr.fit_approx_model(train_images=self.train_images, true_relevances=list(self.true_relevances[nr.neuron_index]))
-                    nr.save_model()
-                else:
-                    nr.load_model()
+        print('Start Training of Min-Max-Model')
+        dls = [layer for layer in self.classifier.model.layers if type(layer) == Dense]
+        nb_neurons = dls[1].weights[0].shape[0]
+        for neuron_index in range(0,nb_neurons):
+            nr = Nested_Regressor(
+                    input_shape=self.train_images[0].shape, 
+                    use_bias=False, 
+                    neuron_index=neuron_index, 
+                )
+            self.nested_regressors.append(nr)
+            
+        for nr in self.nested_regressors:
+            if pretrained==False:
+                nr.fit_approx_model(train_images=self.train_images, true_relevances=list(self.true_relevances[nr.neuron_index]))
+                nr.save_model()
+            else:
+                nr.load_model()
                 
                 
     def min_max_rel_prop(self, index):
+        print('Start Relevance Propagation')
         relevances = []
         # TODO: Parallelisieren
         z_plus_relevances = run_rel_prop(
@@ -91,6 +96,7 @@ class MinMaxModel():
         
         # Kombinieren von z+ für tiefe Schichten mit RelProp für Aprroximationsmodelle
         for nr in self.nested_regressors:
+            print('Starte Relevance Propagation für Nested Regressor mit Neuron Index {}'.format(nr.neuron_index))
             # TODO: Parallelisieren
             relevance = run_rel_prop(
                                     model = nr.model,

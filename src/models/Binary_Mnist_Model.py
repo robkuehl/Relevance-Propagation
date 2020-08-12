@@ -14,13 +14,7 @@ class Montavon_Classifier:
         
 
     def set_data(self, test_size: float):
-        self.train_images, self.test_images, self.train_labels, self.test_labels = get_mnist_binary(class_nb=self.class_nb, test_size=0.25)
-        self.data = {
-            'train_images':self.train_images,
-            'test_images':self.test_images,
-            'train_labels': self.train_labels,
-            'test_labels': self.test_labels
-        }
+        self.train_images, self.test_images, self.train_labels, self.test_labels = get_mnist_binary(class_nb=self.class_nb, test_size=test_size)
         self.classes = set(list(self.train_labels))
         
 
@@ -33,7 +27,7 @@ class Montavon_Classifier:
     Dense Layer mit 400 Detektionsneuronen, relu aktivierung
     Globales sum-pooling zu einem outputneuron. Output soll ungefähr 1 sein, falls Zahl erkannt wurde, 0 sonst
     """ 
-    def set_model(self, which_model=None):
+    def set_model(self):
         #Eingebaute Funktion, die die Uebergangsmatrix mit 1en initialisiert.
         ones_initializer = tf.keras.initializers.Ones()
         model = Sequential()
@@ -49,7 +43,7 @@ class Montavon_Classifier:
         sum_pooling.trainable = False
         model.add(sum_pooling)
         #print("list of weights [0] shape: {}, [1] shape {}".format(list_of_weights[0].shape, list_of_weights[1].shape))
-        model.layers[2].set_weights([np.transpose(self.getSumPoolingWeights(400,100))])
+        model.layers[1].set_weights([np.transpose(self.getSumPoolingWeights(400,100))])
         
         self.model = model
         self.model.compile(loss='binary_crossentropy',
