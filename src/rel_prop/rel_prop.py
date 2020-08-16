@@ -32,6 +32,7 @@ def run_rel_prop(classifier, eps, gamma, index, prediction):
     evolutions_of_R = []
 
     # LRP wird für alle korrekten Klassifizierungen durchgeführt
+    # label_indices = [label_indices[1]]
     for idx in label_indices:
         correct_label = classifier.classes[idx]
         persist_string = f'{dataset}_{index}_{timestamp}_class_{idx}'
@@ -85,7 +86,7 @@ def run_rel_prop(classifier, eps, gamma, index, prediction):
         plot_R_evo(evolutions_of_R, persist_string, False)
 
         # plottet die Visualisierung
-        plot_rel_prop(image, correct_label, relevances, persist_string, False)
+        plot_rel_prop(image, correct_label, relevances, persist_string, True)
         print('plotted')
     except Exception as e:
         raise e

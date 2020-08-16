@@ -37,7 +37,7 @@ Für main_load_model:
 '''
 
 
-classifier = main_load_model('alle_Klassen_ohne_BatchNorm')
+classifier = main_load_model('pascal/alle_Klassen_ohne_BatchNorm')
 test_images = classifier.test_images
 test_labels_df = classifier.test_labels_df
 test_labels = test_labels_df.values
@@ -49,4 +49,4 @@ for index in [452]:
     #     continue
     print(index)
     prediction = classifier.pred(index)
-    run_rel_prop(classifier, eps=0.2, gamma=0.1, index=index, prediction=prediction)
+    run_rel_prop(classifier, eps=0.2, gamma=0.05, index=index, prediction=prediction)
