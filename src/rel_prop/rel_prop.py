@@ -112,12 +112,15 @@ def rel_prop(model: tf.keras.Sequential, image: np.ndarray, mask: np.ndarray, ep
     """
 
     image = preprocess_input(image.copy())
-
+    print("MODEL SUMMARY: \n{}".format(model.summary()))
     # Kopie des Models wird angefertigt, damit Gewichte durch Funktion forward() nicht für nachfolgende Anwendungen
     # verändert werden. Letzte Aktivierung (Sigmoid) wird gelöscht.
     new_model = tf.keras.models.clone_model(model)
+    print("New Model Summary: \n{}".format(new_model.summary()))
     new_model.pop()
+    print("Model weight: \n{}".format(model.get_weights))
     new_model.set_weights(model.get_weights())
+    
 
     # Schichten des Modells werden in Array gespeichert
     layers = new_model.layers
