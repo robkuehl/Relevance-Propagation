@@ -5,17 +5,31 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.optimizers import Adam
 import numpy as np
 from tensorflow.keras.optimizers import SGD
- 
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
+import os
+from os.path import join as pathjoin
+
+dirname = filepath = os.path.dirname(__file__)
+storage_path = pathjoin(dirname, '..','..','models', 'minmax')
 
 class Montavon_Classifier:
     
-    def __init__(self, class_nb: int):
+    def __init__(self, class_nb: int, load_model:bool):
         self.class_nb = class_nb
+        self.storage_path = pathjoin(storage_path, "montavon_classifier_{}".format(self.class_nb))
+        if (load_model and os.path.isdir(self.storage_path)):
+            print('Load model')
+            self.model = tf.keras.models.load_model(pathjoin(self.storage_path, 'model.h5'))
+        elif(load_model and not os.path.isdir(self.storage_path)):
+            print("No model file to load")
+
+        if not os.path.isdir(self.storage_path):
+            os.makedirs(self.storage_path)
         
 
     def set_data(self, test_size: float):
         self.train_images, self.test_images, self.train_labels, self.test_labels = get_mnist_binary(class_nb=self.class_nb, test_size=test_size)
-        self.classes = set(list(self.train_labels))
+        self.classes = [0,1]
         
 
     """
@@ -31,7 +45,8 @@ class Montavon_Classifier:
         #Eingebaute Funktion, die die Uebergangsmatrix mit 1en initialisiert.
         ones_initializer = tf.keras.initializers.Ones()
         model = Sequential()
-        model.add(Dense(400, activation='relu', use_bias = False, input_shape=self.train_images[0].shape))
+        model.add(Flatten(input_shape=self.train_images[0].shape))
+        model.add(Dense(400, activation='relu', use_bias = False))
         #Kernel initializer sorgt dafuer, dass die Gewichtsmatrix die geforderte Pooling Operation realisiert
         custom_pooling = Dense(100, activation = 'relu', use_bias = False, kernel_initializer = ones_initializer)
         #Gewichte sollen nicht veraendert werden
@@ -43,14 +58,14 @@ class Montavon_Classifier:
         sum_pooling.trainable = False
         model.add(sum_pooling)
         #print("list of weights [0] shape: {}, [1] shape {}".format(list_of_weights[0].shape, list_of_weights[1].shape))
-        model.layers[1].set_weights([np.transpose(self.getSumPoolingWeights(400,100))])
+        model.layers[2].set_weights([np.transpose(self.getSumPoolingWeights(400,100))])
         
         self.model = model
         self.model.compile(loss='binary_crossentropy',
                         optimizer=SGD(learning_rate = 0.0001),
                         metrics=['acc'])
        
-        model.summary()
+        self.model.summary()
 
     
     """
@@ -74,13 +89,16 @@ class Montavon_Classifier:
 
 
     def fit_model(self, epochs: int, batch_size: int):
+        early_stopping = EarlyStopping(monitor='val_loss', patience=15, verbose=2)
+        checkpoint = ModelCheckpoint(filepath=pathjoin(self.storage_path, 'model.h5'), verbose=2, safe_best_only=True)
         self.model.fit(
             self.train_images,
             self.train_labels,
             epochs=epochs,
             batch_size=batch_size,
             validation_split=0.2,
-            verbose=2
+            verbose=2,
+            callbacks=[checkpoint]
         )
 
     def predict_train_image(self, index):

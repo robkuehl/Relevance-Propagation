@@ -160,7 +160,7 @@ def get_mnist_binary(class_nb:int, test_size):
         #print("Number of train indices: ", len(indices))
             
         images = np.asarray([images[i] for i in indices])
-        labels = np.asarray([labels[i] for i in indices])
+        labels = np.asarray([[labels[i]] for i in indices])
             
         
         train_images, test_images, train_labels, test_labels = train_test_split(images, labels, test_size=test_size, random_state=42)
