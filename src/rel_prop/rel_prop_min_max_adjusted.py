@@ -148,7 +148,12 @@ def rel_prop(model: tf.keras.Sequential, image: np.ndarray, mask: np.ndarray, ep
     R = [None] * L + [output_const]
 
     # Relevance Propagation wird gestartet. Von hinten nach vorne
-    for l in range(2, L)[::-1]:
+    if isinstance(layers[0], tf.keras.layers.Flatten):
+        start = 2
+    else:
+        start = 1
+
+    for l in range(start, L)[::-1]:
         layer = layers[l]
         output = outputs[l]
         R_old = R[l + 1]
@@ -168,7 +173,11 @@ def rel_prop(model: tf.keras.Sequential, image: np.ndarray, mask: np.ndarray, ep
             relative_R_vals.append(R[l].numpy().sum() / initial_R)
 
     # Für letzten Schritt wird z^B verwendet
-    R[1] = z_b(R[2], outputs[1], layers[1])
+    if isinstance(layers[0], tf.keras.layers.Flatten):
+        R[1] = z_b(R[2], outputs[1], layers[1])
+    else:
+        R[0] = z_b(R[1], outputs[0], layers[0])
+
     relative_R_vals.append(R[1].numpy().sum() / initial_R)
 
     # Reshape Output der Relevance Propagation zu Shape des Inputs
