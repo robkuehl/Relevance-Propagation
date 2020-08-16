@@ -35,17 +35,19 @@ def get_higher_relevances(classifier:Montavon_Classifier, recalc:bool, use_highe
         higher_relevances = []
         indices = range(0, len(list(classifier.train_images)))
         for index in indices:
-            relevances = run_rel_prop(model=classifier.model,
-                                      test_images=classifier.train_images,
-                                      test_labels=classifier.train_labels,
-                                      classes=classifier.classes,
-                                      eps=0, gamma=0, 
-                                      index=index, 
-                                      prediction=classifier.predict_train_image(index))
-            r_true = relevances[-3].reshape(-1,1)
-            true_relevances.append(r_true)
-            high_rel = relevances[-2].reshape(-1,1)
-            higher_relevances.append(high_rel)
+            pred = classifier.predict_train_image(index)
+            if pred == 1 and classifier.train_labels[index]==1:
+                relevances = run_rel_prop(model=classifier.model,
+                                        test_images=classifier.train_images,
+                                        test_labels=classifier.train_labels,
+                                        classes=classifier.classes,
+                                        eps=0, gamma=0, 
+                                        index=index, 
+                                        prediction=pred)
+                r_true = relevances[-3].reshape(-1,1)
+                true_relevances.append(r_true)
+                high_rel = relevances[-2].reshape(-1,1)
+                higher_relevances.append(high_rel)
             
         higher_relevances = np.column_stack(higher_relevances)
         true_relevances = np.column_stack(true_relevances)
