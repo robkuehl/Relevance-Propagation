@@ -16,13 +16,8 @@ class Montavon_Classifier:
     
     def __init__(self, class_nb: int, load_model:bool):
         self.class_nb = class_nb
+        self.load_model = load_model
         self.storage_path = pathjoin(storage_path, "montavon_classifier_{}".format(self.class_nb))
-        if (load_model and os.path.isdir(self.storage_path)):
-            print('Load model')
-            self.model = tf.keras.models.load_model(pathjoin(self.storage_path, 'model.h5'))
-        elif(load_model and not os.path.isdir(self.storage_path)):
-            print("No model file to load")
-
         if not os.path.isdir(self.storage_path):
             os.makedirs(self.storage_path)
         
@@ -42,6 +37,12 @@ class Montavon_Classifier:
     Globales sum-pooling zu einem outputneuron. Output soll ungefähr 1 sein, falls Zahl erkannt wurde, 0 sonst
     """ 
     def set_model(self):
+        if (self.load_model and os.path.isdir(self.storage_path)):
+            print('Load model')
+            self.model = tf.keras.models.load_model(pathjoin(self.storage_path, 'model.h5'))
+            return
+        elif(self.load_model and not os.path.isdir(self.storage_path)):
+            print("No model file to load. Model will be fitted!")
         #Eingebaute Funktion, die die Uebergangsmatrix mit 1en initialisiert.
         ones_initializer = tf.keras.initializers.Ones()
         model = Sequential()
@@ -89,7 +90,10 @@ class Montavon_Classifier:
 
 
     def fit_model(self, epochs: int, batch_size: int):
-        early_stopping = EarlyStopping(monitor='val_loss', patience=15, verbose=2)
+        if(self.load_model and os.path.isdir(self.storage_path)):
+            print("Model has been load, no need to train!")
+            return
+        #early_stopping = EarlyStopping(monitor='val_loss', patience=15, verbose=2)
         checkpoint = ModelCheckpoint(filepath=pathjoin(self.storage_path, 'model.h5'), verbose=2, safe_best_only=True)
         self.model.fit(
             self.train_images,
