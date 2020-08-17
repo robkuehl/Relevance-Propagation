@@ -18,31 +18,31 @@ def plot_rel_prop(image: np.ndarray, correct_label: str, relevances: Tuple, pers
     num_pics = len(relevances)
     n_col = int((num_pics + 1)/2 + 0.5) +1
 
-    # plt.suptitle(f'Erklärung für die Klassifizierung: {correct_label}')
+    plt.suptitle(f'Erklärung für die Klassifizierung: {correct_label}')
 
-    # plt.subplot(1, num_pics+1, 1)
-    # plt.title('Input')
-    # fig = plt.imshow(np.array(image, dtype=np.dtype(int)))
-    # fig.axes.get_xaxis().set_visible(False)
-    # fig.axes.get_yaxis().set_visible(False)
+    plt.subplot(1, num_pics+1, 1)
+    plt.title('Input')
+    fig = plt.imshow(np.array(image, dtype=np.dtype(int)))
+    fig.axes.get_xaxis().set_visible(False)
+    fig.axes.get_yaxis().set_visible(False)
 
     # vals = np.array([val[1] for val in relevances])
     # rel_max = vals.max()
     # rel_min = vals.min()
 
     for i in range(0, num_pics):
-        plt.subplot(2, 5, i+1)
+        plt.subplot(1, 7, i+1)
         plt.title(relevances[i][0], fontsize=12)
         relevance = relevances[i][1][0]
         ax = plt.gca()
         fig = ax.imshow(relevance, cmap='seismic',
                          norm=MidpointNormalize(midpoint=0, vmin=relevance.min(), vmax=relevance.max()))
-        # divider = make_axes_locatable(ax)
-        # cax = divider.append_axes("right", size="5%", pad=0.05)
+        divider = make_axes_locatable(ax)
+        cax = divider.append_axes("right", size="5%", pad=0.05)
 
         order = get_scientific_order(vmin=relevance.min(), vmax=relevance.max())
 
-        # plt.colorbar(fig, cax=cax, format=OOMFormatter(order, mathText=False))
+        plt.colorbar(fig, cax=cax, format=OOMFormatter(order, mathText=False))
         ax.tick_params(
             axis='x',  # changes apply to the x-axis
             which='both',  # both major and minor ticks are affected

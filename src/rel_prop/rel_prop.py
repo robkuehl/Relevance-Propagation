@@ -27,13 +27,13 @@ def run_rel_prop(classifier, eps, gamma, index, prediction):
 
     timestamp = time.strftime('%d-%m_%Hh%M')
     label_indices = np.arange(0,len(label))[label == 1]
-    titles = []
-    relevances = []
-    evolutions_of_R = []
 
     # LRP wird für alle korrekten Klassifizierungen durchgeführt
     # label_indices = [label_indices[1]]
     for idx in label_indices:
+        titles = []
+        relevances = []
+        evolutions_of_R = []
         correct_label = classifier.classes[idx]
         persist_string = f'{dataset}_{index}_{timestamp}_class_{idx}'
 
@@ -79,17 +79,17 @@ def run_rel_prop(classifier, eps, gamma, index, prediction):
         relevances.append(relevance)
         evolutions_of_R.append(relative_R_vals)
 
-    relevances = tuple(zip(titles, relevances))
-    evolutions_of_R = tuple(zip(titles, evolutions_of_R))
-    try:
-        # plottet Verlauf der Summe über alle R
-        plot_R_evo(evolutions_of_R, persist_string, False)
+        relevances = tuple(zip(titles, relevances))
+        evolutions_of_R = tuple(zip(titles, evolutions_of_R))
+        try:
+            # plottet Verlauf der Summe über alle R
+            # plot_R_evo(evolutions_of_R, persist_string, False)
 
-        # plottet die Visualisierung
-        plot_rel_prop(image, correct_label, relevances, persist_string, True)
-        print('plotted')
-    except Exception as e:
-        raise e
+            # plottet die Visualisierung
+            plot_rel_prop(image, correct_label, relevances, persist_string, False)
+            print('plotted')
+        except Exception as e:
+            raise e
 
     # plot_rel_prop(image, correct_label, relevances, persist_string, True)
 
@@ -220,7 +220,7 @@ def calc_r(R: np.ndarray, prev_output: np.ndarray, layer, counter: int, eps: flo
         gt.watch(prev_output)
 
         if z_pos:
-            z = forward(prev_output=prev_output, layer=layer, c=gamma, mode='pos', no_bias=False)
+            z = forward(prev_output=prev_output, layer=layer, c=gamma, mode='pos', no_bias=no_bias)
         else:
             z = forward(prev_output=prev_output, layer=layer, c=gamma, mode='gamma', no_bias=no_bias)
 
