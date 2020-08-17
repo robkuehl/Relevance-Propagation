@@ -63,7 +63,7 @@ class Montavon_Classifier:
         
         self.model = model
         self.model.compile(loss='binary_crossentropy',
-                        optimizer=SGD(learning_rate = 0.0001),
+                        optimizer=SGD(learning_rate = 0.000001),
                         metrics=['acc'])
        
         self.model.summary()
