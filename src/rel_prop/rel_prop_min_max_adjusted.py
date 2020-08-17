@@ -9,12 +9,11 @@ from tensorflow.keras.applications.vgg16 import preprocess_input
 from src.plotting.plot_funcs import plot_rel_prop, plot_R_evo
 
 
-def run_rel_prop(model, test_images, test_labels, classes, eps, gamma, index, prediction):
+def run_rel_prop(model, test_images, test_labels, classes, index, prediction, regressor: bool = False,
+                 output: np.ndarray = None):
     """
     Funktion, die die Relevance Propagation startet.
     :param model: Keras Model
-    :param eps: Parameter für LRP-epsilon
-    :param gamma: Parameter für LRP-gamma
     :param index: Index des Inputs in Datensatz
     :param prediction: Klassifizierung des Modells
     :return: None
@@ -49,35 +48,9 @@ def run_rel_prop(model, test_images, test_labels, classes, eps, gamma, index, pr
 
         mask = tf.constant(mask, dtype=tf.float32)
 
-        # Wenn eine Regel nicht gebraucht wird, einfach auskommentieren
-        # LRP-0
-
-        # titles.append(f'LRP-0')
-        # relevance, relative_R_vals = rel_prop(model, img, mask, no_bias=no_bias)
-        # relevances.append(relevance)
-        # evolutions_of_R.append(relative_R_vals)
-
-        # # LRP-eps
-        # titles.append(f'LRP-ε (ε={eps} * std)')
-        # relevance, relative_R_vals = rel_prop(model, img, mask, eps=eps, no_bias=no_bias)
-        # relevances.append(relevance)
-        # evolutions_of_R.append(relative_R_vals)
-
-        # # LRP-gamma
-        # titles.append(f'LRP-γ (γ={gamma})')
-        # relevance, relative_R_vals = rel_prop(model, img, mask, gamma=gamma, no_bias=no_bias)
-        # relevances.append(relevance)
-        # evolutions_of_R.append(relative_R_vals)
-
-        # # LRP-Komposition
-        # titles.append(f'LRP-Komposition')
-        # relevance, relative_R_vals = rel_prop(model, img, mask, eps=2*eps, gamma=2*gamma, comb=True, no_bias=no_bias)
-        # relevances.append(relevance)
-        # evolutions_of_R.append(relative_R_vals)
-
         # z+
         titles.append(r'$z^+$')
-        relevance, relative_R_vals, R = rel_prop(model, img, mask, z_pos=True)
+        relevance, relative_R_vals, R = rel_prop(model, img, mask, z_pos=True, regressor, output)
         relevances.append(relevance)
         evolutions_of_R.append(relative_R_vals)
 
@@ -98,7 +71,8 @@ def run_rel_prop(model, test_images, test_labels, classes, eps, gamma, index, pr
 
 
 def rel_prop(model: tf.keras.Sequential, image: np.ndarray, mask: np.ndarray, eps: float = 0, gamma: float = 0,
-             z_pos: bool = False, comb: bool = False, no_bias: bool = False) -> Tuple:
+             z_pos: bool = False, comb: bool = False, no_bias: bool = False, regressor: bool = False,
+             output: np.ndarray = None) -> Tuple:
     """
     Berechnet für gegebenes Model und Bild die gesamte Relevance Propagation
     :param model: Model eines KNNS
@@ -133,6 +107,10 @@ def rel_prop(model: tf.keras.Sequential, image: np.ndarray, mask: np.ndarray, ep
             output = tf.keras.activations.relu(output)
 
         outputs.append(output)
+
+    # wenn es sich um Regressor handelt, übernehme übergebenen Output
+    if regressor:
+        outputs[-1] = output
 
     # Anzahl der Schichten
     L = len(layers)
