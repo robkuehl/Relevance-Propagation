@@ -2,7 +2,16 @@ import tensorflow as tf
 import numpy as np
 from tensorflow.keras.models import Sequential, save_model, load_model
 from tensorflow.keras.initializers import Ones
-from tensorflow.keras.layers import Dense, Flatten
+from tensorflow.keras.layers import Dense, Flatten, Input
+from tensorflow.keras.models import Model
+from keras.layers.merge import concatenate
+from tensorflow.keras.utils import plot_model
+
+# Custom activation function
+from keras.layers import Activation
+from keras import backend as K
+from keras.utils.generic_utils import get_custom_objects
+
 import numpy as np
 from src.data.get_data import get_mnist
 from tensorflow.keras.optimizers import SGD
@@ -36,32 +45,42 @@ class Nested_Regressor():
         self.storage_path = pathjoin(filepath, "..", "..", "models", "minmax_submodels")
         self.set_approx_model()
         print('Created nested regressor for neuron with index {}'.format(neuron_index))
-        
+    
+    def custom_activation(self, x):
+        return (-K.relu(-x))
+    
+
     
     def set_approx_model(self):
-        model = Sequential()
-        model.add(Flatten(input_shape=self.input_shape))
-        model.add(Dense(100, 
-                        activation=tf.keras.activations.relu,
-                        kernel_initializer=tf.keras.initializers.glorot_normal(),
-                        use_bias=self.use_bias))
-        sum_pooling = Dense(1, 
-                            activation=tf.keras.activations.linear, 
-                            use_bias=self.use_bias, 
-                            kernel_initializer=Ones())
-        sum_pooling.trainable=False
-        model.add(sum_pooling)
-        model.compile(
-            optimizer = SGD(learning_rate=0.0000001),
-            loss=tf.keras.losses.mse,
-            metrics=[tf.keras.losses.mse]
-        )
-        self.model = model
+        get_custom_objects().update({'custom_activation': Activation(self.custom_activation)})
+        image_input = Input(shape=(28,28))
+        flat = Flatten()(image_input)
+        dense = Dense(100, activation='linear', use_bias=False)(flat)
         
-    def fit_approx_model(self, train_images, true_relevances, higher_relevances=None):
+        #bias
+        relevance_input = Input(shape=(400,1))
+        dense_bias = Dense(100, activation='custom_activation')(relevance_input)
+        
+        merge = concatenate([dense, dense_bias])
+        
+        w_matrix = np.column_stack([np.identity(100), np.identity(100)])
+        add_up_layer = Dense(100, activation='relu')(merge)
+        add_up_layer.set_weights(w_matrix)
+        add_up_layer.trainable=False
+        
+        sum_pooling_layer = Dense(1, activation='linear', kernel_initializer=tf.keras.initializers.Ones())(add_up_layer)
+        sum_pooling_layer.trainable=False
+        
+        model = Model(inputs=[image_input, relevance_input], outputs=sum_pooling_layer)
+        
+        print(model.summary)
+        
+        plot_model(model, to_file="/home/robin/Desktop/functional_model.png")
+        
+    def fit_approx_model(self, train_images, true_relevances, higher_relevances):
         checkpoint = ModelCheckpoint(filepath=pathjoin(self.storage_path, "nested_regressor_{}.h5".format(self.neuron_index)))
         print('Fit model of nested regressor with neuron index {}'.format(self.neuron_index))
-        self.model.fit(x=train_images, y=true_relevances, batch_size=32, epochs=300, validation_split=0.15, callbacks=[checkpoint])
+        self.model.fit(x=[train_images, higher_relevances], y=true_relevances, batch_size=32, epochs=300, validation_split=0.15, callbacks=[checkpoint])
         
     
     def save_model(self):
