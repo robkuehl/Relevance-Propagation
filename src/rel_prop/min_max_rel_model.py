@@ -105,6 +105,7 @@ class Nested_Regressor():
         plot_model(model, to_file="/home/robin/Desktop/functional_model.png")
         
     def fit_approx_model(self, train_images, true_relevances, higher_relevances):
+        true_relevances = np.transpose(true_relevances)
         checkpoint = ModelCheckpoint(filepath=pathjoin(self.storage_path, "nested_regressor_{}.h5".format(self.neuron_index)))
         print('Fit model of nested regressor with neuron index {}'.format(self.neuron_index))
         self.model.fit(x=[train_images, higher_relevances], y=true_relevances, batch_size=32, epochs=300, validation_split=0.15, callbacks=[checkpoint])
@@ -164,13 +165,13 @@ class MinMaxModel():
             
         for nr in self.nested_regressors:
             if pretrained==False:
-                nr.fit_approx_model(train_images=self.nr_train_images, true_relevances=self.true_relevances[nr.neuron_index])
+                nr.fit_approx_model(train_images=self.nr_train_images, true_relevances=self.true_relevances[nr.neuron_index], higher_relevances=self.higher_relevances)
                 #nr.save_model()
             else:
                 try:
                     nr.load_model()
                 except Exception:
-                    nr.fit_approx_model(train_images=self.nr_train_images, true_relevances=self.true_relevances[nr.neuron_index])
+                    nr.fit_approx_model(train_images=self.nr_train_images, true_relevances=self.true_relevances[nr.neuron_index], higher_relevances=self.higher_relevances)
                 
                 
     def min_max_rel_prop(self, index:int):
