@@ -54,19 +54,19 @@ class Nested_Regressor():
     def set_approx_model(self):
         get_custom_objects().update({'custom_activation': Activation(self.custom_activation)})
         
-        image_input = Input(shape=(28,28))
-        flat_image = Flatten()
-        x1 = flat1(image_input)
+        image_input = Input(shape=(28,28), name="image_input")
+        flat_image = Flatten(name="flat_image")
+        x1 = flat_image(image_input)
         
-        dense_image = Dense(100, activation='linear', use_bias=False)
-        x1 = dense(x1)
+        dense_image = Dense(100, activation='linear', use_bias=False, name="dense_image")
+        x1 = dense_image(x1)
         
         #bias
-        bias_input = Input(shape=(400,1))
-        flat_bias = Flatten()
-        x2 = flat2(bias_input)
+        bias_input = Input(shape=(400,1), name="bias_input")
+        flat_bias = Flatten(name="flat_bias")
+        x2 = flat_bias(bias_input)
         
-        dense_bias = Dense(100, activation=self.custom_activation)
+        dense_bias = Dense(100, activation=self.custom_activation, name="dense_bias")
         x2 = dense_bias(x2)
         
         merge = concatenate([x1, x2])
@@ -77,20 +77,28 @@ class Nested_Regressor():
         add_up_layer.trainable=False
         x = add_up_layer(merge)
         
-        sum_pooling_layer = Dense(1, activation='linear', kernel_initializer=tf.keras.initializers.Ones())
+        sum_pooling_layer = Dense(1, activation='linear', kernel_initializer=tf.keras.initializers.Ones(), name="sum_pooling", use_bias=False)
         sum_pooling_layer.trainable=False
         output = sum_pooling_layer(x)
         
-        model = Model(inputs=[image_input, relevance_input], outputs=output)
+        model = Model(inputs=[image_input, bias_input], outputs=output)
         
-        # w_matrix = np.column_stack([np.identity(100), np.identity(100)])
+        self.model = model
         
-        # i = 0
-        # for layer in model.layers:
-        #     if layer.name == 'add_up_layer':
-        #         model.layers[i].set_weights(w_matrix) 
-        #     else:
-        #         i+=1
+        w_matrix = np.row_stack([np.identity(100), np.identity(100)])
+        
+        i = 0
+        for layer in model.layers:
+            if layer.name == 'add_up_layer':
+                model.layers[i].set_weights([w_matrix]) 
+            else:
+                i+=1
+                
+        model.compile(
+            optimizer=SGD(learning_rate=0.0000001),
+            loss='mse',
+            metrics=['mse']
+        )
         
         print(model.summary())
         
