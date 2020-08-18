@@ -50,8 +50,9 @@ class Nested_Regressor():
         return ((-1)*K.relu(-x))
     
 
-    
     def set_approx_model(self):
+        """Create a model with the keras functional api
+        """
         get_custom_objects().update({'custom_activation': Activation(self.custom_activation)})
         
         image_input = Input(shape=(28,28), name="image_input")
@@ -102,10 +103,10 @@ class Nested_Regressor():
         
         print(model.summary())
         
-        plot_model(model, to_file="/home/robin/Desktop/functional_model.png")
+        plot_model(model, to_file=pathjoin(filepath, "..", "..", "functional_model.png"))
         
     def fit_approx_model(self, train_images, true_relevances, higher_relevances):
-        true_relevances = np.transpose(true_relevances)
+        higher_relevances = np.transpose(higher_relevances)
         checkpoint = ModelCheckpoint(filepath=pathjoin(self.storage_path, "nested_regressor_{}.h5".format(self.neuron_index)))
         print('Fit model of nested regressor with neuron index {}'.format(self.neuron_index))
         self.model.fit(x=[train_images, higher_relevances], y=true_relevances, batch_size=32, epochs=300, validation_split=0.15, callbacks=[checkpoint])
@@ -121,8 +122,6 @@ class Nested_Regressor():
         
 
 class MinMaxModel():
-    
-    
     """
         # Für jedes Neuron im zweiten Dense Layer (100 Neuronen), erstelle einen nested_regressor
         # Lade Relevances aus zweitem Dense Layer für das entsprechende Neuron und trainiere den nested_regressor

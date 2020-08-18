@@ -28,7 +28,10 @@ def get_higher_relevances(classifier:Montavon_Classifier, recalc_rel:bool, use_h
     """
     
     print("Started to collect relevances to train min-max-model!")
-    print("Info: You decided not to use higher relevances for training.")
+    if use_higher_rel:
+        print("Info: You decided to use higher relevances for training.")
+    else:
+        print("Info: You decided not to use higher relevances for training.")
     dirname = os.path.dirname(__file__)
     # Falls nicht existent, erstelle alle notwendigen Ordner
     storage_path = pathjoin(dirname, "..", "..", "data", "min_max_relevances")
@@ -49,7 +52,7 @@ def get_higher_relevances(classifier:Montavon_Classifier, recalc_rel:bool, use_h
     
     # Andernfalls, berechne sie neu
     else:
-        print("No local directory with precalculated relevances. Started to calculate higher relevances for min-max-model.")
+        print("You chose to recalculate or no local directory with precalculated relevances. Started to calculate higher relevances for min-max-model.")
         true_relevances = []
         higher_relevances = []
         pos_classified_indices = []
@@ -59,8 +62,9 @@ def get_higher_relevances(classifier:Montavon_Classifier, recalc_rel:bool, use_h
         for index in indices:
             pred = classifier.predict_train_image(index)
             if index%100 == 0:
-                print("Calculate relevance for test image with index {}".format(index))
+                print("Calculate relevance for train image with index {}".format(index))
             if pred == 1 and classifier.train_labels[index]==1:
+            #if pred == 1:
                 pos_classified_indices.append(index)
                 relevances = run_rel_prop(model=classifier.model,
                                         test_images=classifier.train_images,
