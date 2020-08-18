@@ -50,7 +50,7 @@ def run_rel_prop(model, test_images, test_labels, classes, index, prediction, re
 
         # z+
         titles.append(r'$z^+$')
-        relevance, relative_R_vals, R = rel_prop(model, img, mask, z_pos=True, regressor, output)
+        relevance, relative_R_vals, R = rel_prop(model=model, image=img, mask=mask, z_pos=True, regressor=regressor, output=output)
         relevances.append(relevance)
         evolutions_of_R.append(relative_R_vals)
 
