@@ -4,13 +4,13 @@ from tensorflow.keras.models import Sequential, save_model, load_model
 from tensorflow.keras.initializers import Ones
 from tensorflow.keras.layers import Dense, Flatten, Input
 from tensorflow.keras.models import Model
-from keras.layers.merge import concatenate
+from tensorflow.keras.layers import concatenate
 from tensorflow.keras.utils import plot_model
 
 # Custom activation function
-from keras.layers import Activation
-from keras import backend as K
-from keras.utils.generic_utils import get_custom_objects
+from tensorflow.keras.layers import Activation
+from tensorflow.keras import backend as K 
+from tensorflow.keras.utils import get_custom_objects
 
 import numpy as np
 from src.data.get_data import get_mnist
@@ -29,7 +29,7 @@ class Nested_Regressor():
     tieferen Schicht R_l zu approximieren.
     Für den Montavon Classifier benötigen wür zu Approximation der Relevanzen im 2. Dense Layer demnach 100 Nested Regressor, jeder für 1 Neuron.
     Das Approximationsmodell des Nested Regressor ist das One-Layer Network aus Abschnitt 3 in Montavon et al. kombiniert mit einem trainierbaren Bias Term.
-    Da der Bias eigene Inputdaten bekommt (R_l), bauen wir das Modell mit der Keras Functional API
+    Da der Bias eigene Inputdaten bekommt (R_l), bauen wir das Modell mit der tensorflow.keras Functional API
     """
     
     def __init__(self, input_shape:tuple, use_bias:bool, neuron_index:int):
@@ -47,33 +47,52 @@ class Nested_Regressor():
         print('Created nested regressor for neuron with index {}'.format(neuron_index))
     
     def custom_activation(self, x):
-        return (-K.relu(-x))
+        return ((-1)*K.relu(-x))
     
 
     
     def set_approx_model(self):
         get_custom_objects().update({'custom_activation': Activation(self.custom_activation)})
+        
         image_input = Input(shape=(28,28))
-        flat = Flatten()(image_input)
-        dense = Dense(100, activation='linear', use_bias=False)(flat)
+        flat_image = Flatten()
+        x1 = flat1(image_input)
+        
+        dense_image = Dense(100, activation='linear', use_bias=False)
+        x1 = dense(x1)
         
         #bias
-        relevance_input = Input(shape=(400,1))
-        dense_bias = Dense(100, activation='custom_activation')(relevance_input)
+        bias_input = Input(shape=(400,1))
+        flat_bias = Flatten()
+        x2 = flat2(bias_input)
         
-        merge = concatenate([dense, dense_bias])
+        dense_bias = Dense(100, activation=self.custom_activation)
+        x2 = dense_bias(x2)
         
-        w_matrix = np.column_stack([np.identity(100), np.identity(100)])
-        add_up_layer = Dense(100, activation='relu')(merge)
-        add_up_layer.set_weights(w_matrix)
+        merge = concatenate([x1, x2])
+        
+        
+        
+        add_up_layer = Dense(100, activation='relu', use_bias=False, name='add_up_layer')
         add_up_layer.trainable=False
+        x = add_up_layer(merge)
         
-        sum_pooling_layer = Dense(1, activation='linear', kernel_initializer=tf.keras.initializers.Ones())(add_up_layer)
+        sum_pooling_layer = Dense(1, activation='linear', kernel_initializer=tf.keras.initializers.Ones())
         sum_pooling_layer.trainable=False
+        output = sum_pooling_layer(x)
         
-        model = Model(inputs=[image_input, relevance_input], outputs=sum_pooling_layer)
+        model = Model(inputs=[image_input, relevance_input], outputs=output)
         
-        print(model.summary)
+        # w_matrix = np.column_stack([np.identity(100), np.identity(100)])
+        
+        # i = 0
+        # for layer in model.layers:
+        #     if layer.name == 'add_up_layer':
+        #         model.layers[i].set_weights(w_matrix) 
+        #     else:
+        #         i+=1
+        
+        print(model.summary())
         
         plot_model(model, to_file="/home/robin/Desktop/functional_model.png")
         
