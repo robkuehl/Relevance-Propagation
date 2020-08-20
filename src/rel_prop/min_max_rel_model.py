@@ -14,7 +14,7 @@ from tensorflow.keras.utils import get_custom_objects
 
 import numpy as np
 from src.data.get_data import get_mnist
-from tensorflow.keras.optimizers import SGD
+from tensorflow.keras.optimizers import SGD, Adam
 from os.path import join as pathjoin
 import os
 from src.rel_prop.minmax_utils import get_higher_relevances
@@ -71,9 +71,7 @@ class Nested_Regressor():
         x2 = dense_bias(x2)
         
         merge = concatenate([x1, x2])
-        
-        
-        
+
         add_up_layer = Dense(100, activation='relu', use_bias=False, name='add_up_layer')
         add_up_layer.trainable=False
         x = add_up_layer(merge)
@@ -88,29 +86,26 @@ class Nested_Regressor():
         
         w_matrix = np.row_stack([np.identity(100), np.identity(100)])
         
-        i = 0
-        for layer in model.layers:
+        for i, layer in enumerate(model.layers):
             if layer.name == 'add_up_layer':
                 model.layers[i].set_weights([w_matrix]) 
-            else:
-                i+=1
-                
+
         model.compile(
-            optimizer=SGD(learning_rate=0.0000001),
+            optimizer=Adam(learning_rate=0.00001),
             loss='mse',
             metrics=['mse']
         )
         
-        print(model.summary())
+        # print(model.summary())
         
-        plot_model(model, to_file=pathjoin(filepath, "..", "..", "functional_model.png"))
+        # plot_model(model, to_file=pathjoin(filepath, "..", "..", "functional_model.png"))
         
     def fit_approx_model(self, train_images, true_relevances, higher_relevances):
         higher_relevances = np.transpose(higher_relevances)
         early_stopping = EarlyStopping(monitor='val_loss', patience=50, verbose=2)
         checkpoint = ModelCheckpoint(filepath=pathjoin(self.storage_path, "nested_regressor_{}.h5".format(self.neuron_index)))
         print('Fit model of nested regressor with neuron index {}'.format(self.neuron_index))
-        history = self.model.fit(x=[train_images, higher_relevances], y=true_relevances, batch_size=32, epochs=3000, validation_split=0.2, callbacks=[checkpoint, early_stopping])
+        history = self.model.fit(x=[train_images, higher_relevances], y=true_relevances, batch_size=32, epochs=300, validation_split=0.2, callbacks=[checkpoint, early_stopping], verbose=0)
         return history
     
     def save_model(self):
@@ -119,10 +114,8 @@ class Nested_Regressor():
     def load_model(self):
         self.model = load_model(filepath=pathjoin(self.storage_path, "nested_regressor_{}.h5".format(self.neuron_index)))
     
-        
-        
 
-class MinMaxModel():
+class MinMaxModel:
     """
         # Für jedes Neuron im zweiten Dense Layer (100 Neuronen), erstelle einen nested_regressor
         # Lade Relevances aus zweitem Dense Layer für das entsprechende Neuron und trainiere den nested_regressor
@@ -165,12 +158,13 @@ class MinMaxModel():
             
         for nr in self.nested_regressors:
             if pretrained==False:
-                nr.fit_approx_model(train_images=self.nr_train_images, true_relevances=self.true_relevances[nr.neuron_index], higher_relevances=self.higher_relevances)
+                nr.fit_approx_model(train_images=self.nr_train_images, true_relevances=self.true_relevances[nr.neuron_index], higher_relevances=np.array([self.higher_relevances]))
                 #nr.save_model()
             else:
                 try:
                     nr.load_model()
                 except Exception:
+                    print('Nicht geladen')
                     nr.fit_approx_model(train_images=self.nr_train_images, true_relevances=self.true_relevances[nr.neuron_index], higher_relevances=self.higher_relevances)
                 
                 

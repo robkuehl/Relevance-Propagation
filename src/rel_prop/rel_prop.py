@@ -7,6 +7,8 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.applications.vgg16 import preprocess_input
 
 from src.plotting.plot_funcs import plot_rel_prop, plot_R_evo
+import os
+
 
 
 def run_rel_prop(model, test_images, test_labels, classes, eps, gamma, index, prediction):

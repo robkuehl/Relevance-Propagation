@@ -98,9 +98,3 @@ def get_higher_relevances(classifier:Montavon_Classifier, recalc_rel:bool, use_h
         return true_relevances, higher_relevances, nr_train_images
     else:
         return true_relevances, None, nr_train_images
-        
-
-    
-    
-    
-    

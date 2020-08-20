@@ -43,8 +43,7 @@ def run_rel_prop(model, test_images, test_labels, classes, index, prediction, re
         mask[idx] = 1.
 
         # Wenn Vorhersage zu schwach, überspringe
-        if np.max(mask - prediction) > 2e-01:
-            continue
+
 
         mask = tf.constant(mask, dtype=tf.float32)
 
@@ -54,19 +53,6 @@ def run_rel_prop(model, test_images, test_labels, classes, index, prediction, re
         relevances.append(relevance)
         evolutions_of_R.append(relative_R_vals)
 
-    relevances = tuple(zip(titles, relevances))
-    evolutions_of_R = tuple(zip(titles, evolutions_of_R))
-    # try:
-    #     # plottet Verlauf der Summe über alle R
-    #     plot_R_evo(evolutions_of_R, persist_string, False)
-    #
-    #     # plottet die Visualisierung
-    #     plot_rel_prop(image, correct_label, relevances, persist_string, False)
-    #     print('plotted')
-    # except Exception as e:
-    #     raise e
-
-    # plot_rel_prop(image, correct_label, relevances, persist_string, True)
     return R
 
 
@@ -89,12 +75,13 @@ def rel_prop(model: tf.keras.Sequential, image: np.ndarray, mask: np.ndarray, ep
     # image = preprocess_input(image.copy())
     # Kopie des Models wird angefertigt, damit Gewichte durch Funktion forward() nicht für nachfolgende Anwendungen
     # verändert werden. Letzte Aktivierung (Sigmoid) wird gelöscht.
-    new_model = tf.keras.models.clone_model(model)
-
-    new_model.set_weights(model.get_weights())
 
     # Schichten des Modells werden in Array gespeichert
-    layers = new_model.layers
+    layers = model.layers
+
+    if regressor:
+        layers = [model.layers[idx] for idx in [0, 2, 4, 8]]
+
 
     # Input wird in Netz gegeben und der Output jeder Schicht wird in Array gespeichert
     outputs = [image]
@@ -152,9 +139,9 @@ def rel_prop(model: tf.keras.Sequential, image: np.ndarray, mask: np.ndarray, ep
 
     # Für letzten Schritt wird z^B verwendet
     if isinstance(layers[0], tf.keras.layers.Flatten):
-        R[1] = z_b(R[2], outputs[1], layers[1])
+        R[1] = z_b(R[2], outputs[1], layers[1], regressor)
     else:
-        R[0] = z_b(R[1], outputs[0], layers[0])
+        R[0] = z_b(R[1], outputs[0], layers[0], regressor)
 
     relative_R_vals.append(R[1].numpy().sum() / initial_R)
 
@@ -235,7 +222,7 @@ def calc_r(R: np.ndarray, prev_output: np.ndarray, layer, counter: int, eps: flo
     return R_new
 
 
-def z_b(R: np.ndarray, prev_output: np.ndarray, layer) -> np.ndarray:
+def z_b(R: np.ndarray, prev_output: np.ndarray, layer, regressor: bool) -> np.ndarray:
     """
     Ausführung eines Schrittes der Relevance Propagation
     :param R: Relevance der nachfolgenden Schicht (R[l+1])
@@ -245,13 +232,19 @@ def z_b(R: np.ndarray, prev_output: np.ndarray, layer) -> np.ndarray:
     """
 
     # Output der vorherigen Schicht wird in TF-Konstante transformiert
+    # if regressor:
+    #     prev_output = tf.constant(prev_output, dtype=tf.float64)
+    # else:
     prev_output = tf.constant(prev_output)
-
-    low_bound = tf.constant(np.zeros(prev_output.shape), dtype=tf.float32)
+    prev_output = tf.cast(prev_output, tf.float32)
+    low_bound = tf.constant(np.ones(prev_output.shape) * -0.5)
     # low_bound = preprocess_input(low_bound)
+    low_bound = tf.cast(low_bound, tf.float32)
 
-    high_bound = tf.constant(np.ones(prev_output.shape) * 255., dtype=tf.float32)
+    high_bound = tf.constant(np.ones(prev_output.shape) * 1.5)
     # high_bound = preprocess_input(high_bound)
+    high_bound = tf.cast(high_bound, tf.float32)
+
     # GradientTape wird aufgezeichnet
     with tf.GradientTape() as gt:
         # forward pass / step 1

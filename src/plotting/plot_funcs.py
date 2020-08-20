@@ -10,8 +10,10 @@ from src.plotting.help_func import MidpointNormalize, OOMFormatter, get_scientif
 
 
 def plotly_mnist_image(image):
-    fig = px.imshow(image, color_continuous_scale=px.colors.sequential.Cividis, zmin=-0.15, zmax=0.15)
-    fig.show()
+    # fig = px.imshow(image, color_continuous_scale=px.colors.sequential.Cividis, zmin=-0.15, zmax=0.15)
+    a = 1
+    plt.imshow(image)
+    plt.show()
 
 
 def plot_rel_prop(image: np.ndarray, correct_label: str, relevances: Tuple, persist_string: str, show: bool = False):
