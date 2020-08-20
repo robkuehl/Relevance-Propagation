@@ -20,7 +20,7 @@ import os
 from src.rel_prop.minmax_utils import get_higher_relevances
 from src.models.Binary_Mnist_Model import Montavon_Classifier
 from src.rel_prop.rel_prop_min_max_adjusted import run_rel_prop
-from tensorflow.keras.callbacks import ModelCheckpoint
+from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
 
 filepath = os.path.dirname(__file__)
 class Nested_Regressor():
@@ -107,10 +107,11 @@ class Nested_Regressor():
         
     def fit_approx_model(self, train_images, true_relevances, higher_relevances):
         higher_relevances = np.transpose(higher_relevances)
+        early_stopping = EarlyStopping(monitor='val_loss', patience=50, verbose=2)
         checkpoint = ModelCheckpoint(filepath=pathjoin(self.storage_path, "nested_regressor_{}.h5".format(self.neuron_index)))
         print('Fit model of nested regressor with neuron index {}'.format(self.neuron_index))
-        self.model.fit(x=[train_images, higher_relevances], y=true_relevances, batch_size=32, epochs=300, validation_split=0.15, callbacks=[checkpoint])
-        
+        history = self.model.fit(x=[train_images, higher_relevances], y=true_relevances, batch_size=32, epochs=3000, validation_split=0.2, callbacks=[checkpoint, early_stopping])
+        return history
     
     def save_model(self):
         save_model(model=self.model, filepath=pathjoin(self.storage_path, "nested_regressor_{}.h5".format(self.neuron_index)))
