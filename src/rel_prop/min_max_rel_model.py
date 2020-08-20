@@ -186,10 +186,7 @@ class MinMaxModel:
             z_plus_relevances = run_rel_prop(
                                             model = self.classifier.model,
                                             test_images = self.classifier.test_images,
-                                            test_labels = self.classifier.test_labels,
-                                            classes = self.classifier.classes,
                                             index=index,
-                                            prediction = self.classifier.predict_test_image(index)
                                             )[-3]
             z_plus_relevances = np.asarray(z_plus_relevances[0])
             
@@ -200,17 +197,16 @@ class MinMaxModel:
             for nr in self.nested_regressors:
                 print('Starte Relevance Propagation für Nested Regressor mit Neuron Index {}'.format(nr.neuron_index))
                 # TODO: Parallelisieren
+                if not z_plus_relevances[nr.neuron_index] > 0:
+                    continue
                 relevance = run_rel_prop(
                                         model = nr.model,
                                         test_images = self.classifier.test_images,
-                                        test_labels = self.classifier.test_labels,
-                                        classes = self.classifier.classes,
                                         index=index,
-                                        prediction = z_plus_relevances[nr.neuron_index],
                                         regressor=True,
-                                        output=z_plus_relevances[nr.neuron_index]
-                                        )
-                relevances.append(np.asarray(relevance))
+                                        z_plus_output=z_plus_relevances[nr.neuron_index]
+                                        )[0]
+                relevances.append(np.reshape(relevance[0], (28, 28)))
             
             final_relevance = sum(relevances)
             return final_relevance, z_plus_relevances
