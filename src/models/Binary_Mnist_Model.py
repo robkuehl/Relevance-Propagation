@@ -44,6 +44,7 @@ class Montavon_Classifier:
             test_size (float): defines the size of the test data split 
         """
         self.train_images, self.test_images, self.train_labels, self.test_labels = get_mnist_binary(class_nb=self.class_nb, test_size=test_size)
+
         self.classes = [0,1]
         
 

@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 from sklearn.model_selection import train_test_split
 import numpy as np
-from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import OneHotEncoder, MinMaxScaler
 import random
 
 dirname = os.path.dirname(__file__)
@@ -161,8 +161,11 @@ def get_mnist_binary(class_nb:int, test_size):
             
         images = np.asarray([images[i] for i in indices])
         labels = np.asarray([[labels[i]] for i in indices])
-            
-        
+
+        images = images.reshape((27300, 784,))
+        scaler = MinMaxScaler(feature_range=(-0.5, 1.5))
+        images = scaler.fit_transform(X=images).reshape((27300, 28, 28))
+
         train_images, test_images, train_labels, test_labels = train_test_split(images, labels, test_size=test_size, random_state=42)
         print("Train images: {}, train labels: {}".format(train_images.shape[0], train_labels.shape[0]))        
         return train_images, test_images, train_labels, test_labels
