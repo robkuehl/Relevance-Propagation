@@ -62,12 +62,10 @@ def get_higher_relevances(classifier:Montavon_Classifier, recalc_rel:bool):
             if pred == 1 and classifier.train_labels[index]==1:
             #if pred == 1:
                 pos_classified_indices.append(index)
-                relevances = run_rel_prop(model=classifier.model,
-                                        test_images=classifier.train_images,
-                                        test_labels=classifier.train_labels,
-                                        classes=classifier.classes,
-                                        index=index, 
-                                        prediction=pred)
+                relevances = run_rel_prop(model = classifier.model,
+                                            test_images = classifier.test_images,
+                                            index=index
+                                        )
                 r_true = np.asarray(relevances[-3]).reshape(-1,1)
                 true_relevances.append(r_true)
                 high_rel = np.asarray(relevances[-2]).reshape(-1,1)
@@ -90,4 +88,4 @@ def get_higher_relevances(classifier:Montavon_Classifier, recalc_rel:bool):
             np.save(file, nr_train_images)
             
        
-        return true_relevances, higher_relevances, nr_train_images
+    return true_relevances, higher_relevances, nr_train_images
