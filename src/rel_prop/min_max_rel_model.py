@@ -42,7 +42,10 @@ class Nested_Regressor():
         self.input_shape = input_shape
         self.use_bias = use_bias
         self.neuron_index = neuron_index
-        self.storage_path = pathjoin(filepath, "..", "..", "models", "minmax_submodels")
+        if use_bias == True:
+            self.storage_path = pathjoin(filepath, "..", "..", "models", "minmax_submodels_with_bias")
+        else:
+            self.storage_path = pathjoin(filepath, "..", "..", "models", "minmax_submodels_without_bias")
         self.set_approx_model()
         print('Created nested regressor for neuron with index {}'.format(neuron_index))
     
