@@ -4,7 +4,7 @@ import tensorflow as tf
 import numpy as np
 
 from src.model_evaluation import Pascal_Evaluator, Multiclass_Evaluator
-from src.rel_prop.rel_prop import run_rel_prop
+from src.rel_prop.lrp import run_rel_prop
 
 gpu_used = False
 
@@ -18,7 +18,7 @@ if gpu_used == True:
         pass
 
 p_e = Pascal_Evaluator()
-classifier = p_e.evaluate_config(config_nb=1)
+# classifier = p_e.evaluate_config(config_nb=1)
 
 # mce = Multiclass_Evaluator()
 # mce.evaluate_config(0)
@@ -30,11 +30,12 @@ test_images = classifier.test_images
 test_labels_df = classifier.test_labels_df
 test_labels = test_labels_df.values
 index = random.randint(0, test_labels.shape[0])
+lrp_variants = ['zero', 'plus']
 
 for index in np.random.randint(0, test_labels.shape[0], 200):
 # for index in [15]:
     if np.sum(test_labels[index]) > 2:
         continue
     print(index)
-    prediction = classifier.pred(index)
-    run_rel_prop(classifier, eps=0.2, gamma=0.1, index=index, prediction=prediction)
+
+    run_rel_prop(classifier, lrp_variants, index=index, eps=0.2, gamma=0.1)

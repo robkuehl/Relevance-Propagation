@@ -153,10 +153,6 @@ class ml_cnn_classifier:
         image = self.test_images[i]
         prediction = self.model.predict(np.asarray([preprocess_input(image)], dtype=np.float64))
         
-        # Zeige das Bild
-        plt.imshow(Image.fromarray(np.uint8(image)))
-        plt.show()
-        
         # Lade die Korrekten Label des Bildes und gib sie aus
         correct_labels = [self.classes[j] for j in range(self.test_labels[0].shape[0]) if self.test_labels[i][j]==1]
         print('Correct Label: {}\n'.format(correct_labels))
