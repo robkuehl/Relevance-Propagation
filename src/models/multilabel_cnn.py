@@ -20,7 +20,6 @@ from os.path import join as pathjoin
 
 from sklearn.model_selection import train_test_split
 
-from src.data.get_data import get_fashion_mnist, get_cifar10
 from src.data.get_voc_data import pascal_data_generator
 from src.models.help_functions.models import get_cnn_model as get_model
 #from models.custom_callback import CustomModelCheckpoint
@@ -55,7 +54,6 @@ class ml_cnn_classifier:
         self.final_activation = final_activation
         self.loss = loss
         self.metrics = [BinaryAccuracy(name='binary_accuracy'), Precision(name='precision'), Recall(name='recall')]
-        # TODO: Übergeben des Parameters monitor im Konstruktor
         self.monitor = 'val_precision'
         
         # Lade die Daten für das Training des CNN

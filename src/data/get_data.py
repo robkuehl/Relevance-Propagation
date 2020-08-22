@@ -219,3 +219,52 @@ def get_mnist_binary(class_nb:int, test_size):
     print("Train images: {}, train labels: {}".format(train_images.shape[0], train_labels.shape[0]))     
         
     return train_images, test_images, train_labels, test_labels
+
+
+
+
+def get_fashion_mnist_binary(class_nb:int, test_size):
+    """Erstellt einen Datensatz auf Basis des MNIST-Datensatzes der nur für die gewählte Klasse class_nb das Label 1 enthält.
+        Benötigt werden diese Daten für das Min-Max-Modell.
+        Um zu garantieren dass der Classifier die gewählte Klasse unterscheiden kann, werden zufällige Sample der anderen Klassen dem Datensatz hinzugefügt.
+        Abschließend werden die Werte der Pixel auf (-0.5, 1.5) skaliert.
+    
+    Args:
+        class_nb (int): Klasse die der buinäre Classifier erkennen soll
+        test_size ([type]): Größe des Test-Splits in train_test_split
+
+    Returns:
+        train_images, test_images, train_labels, test_labels (numpy.ndarray)
+    """
+    sample_size = 3
+    
+    data, classes = get_fashion_mnist(encoded=False, training=False)
+    
+    true_label = classes[class_nb]
+    
+    images = data['images']
+    labels = data['labels']
+    labels = (labels==true_label).astype(int)
+        
+    # reduce train dataset
+    one_indices = [i for i in range(labels.shape[0]) if labels[i]==1]
+    zero_indices = [i for i in range(labels.shape[0]) if labels[i]==0]
+    sampling = random.choices(zero_indices, k=sample_size*len(one_indices))
+    indices = one_indices + sampling
+    #print("Number of train indices: ", len(indices))
+        
+    images = np.asarray([images[i] for i in indices])
+    labels = np.asarray([[labels[i]] for i in indices])
+
+    images = images.reshape((27300, 784,))
+    scaler = MinMaxScaler(feature_range=(-0.5, 1.5))
+    images = scaler.fit_transform(X=images).reshape((27300, 28, 28))
+
+    train_images, test_images, train_labels, test_labels = train_test_split(images, labels, test_size=test_size, random_state=42)
+    print("Train images: {}, train labels: {}".format(train_images.shape[0], train_labels.shape[0]))     
+        
+    return train_images, test_images, train_labels, test_labels
+
+
+
+

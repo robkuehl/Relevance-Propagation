@@ -116,7 +116,7 @@ class Montavon_Classifier:
         if(self.load_model and os.path.isdir(self.storage_path)):
             print("Model has been load, no need to train!")
             return
-        #early_stopping = EarlyStopping(monitor='val_loss', patience=15, verbose=2)
+        early_stopping = EarlyStopping(monitor='val_accuracy', patience=25, verbose=2)
         checkpoint = ModelCheckpoint(filepath=pathjoin(self.storage_path, 'model.h5'), verbose=2, safe_best_only=True)
         self.model.fit(
             self.train_images,

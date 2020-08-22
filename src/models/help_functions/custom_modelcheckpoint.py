@@ -3,10 +3,11 @@ from __future__ import division
 from __future__ import print_function
 
 
-  """Der Custom Model Checkpoint wird im Training des Multilabel Classifiers für den Pascal VOC Datensatz verwendet.
-     Der Code ist eine abgeänderte Variante des Source Codes der Keras Klasse. Er ist dahingehend verändert worden, dass er nun zwei Metriken berücksichtigt.  
-     Die Änderungen wurden in der Methode _save_model (ab Zeile 257) vorgenommen und sehen vor, dass der Checkpoint mit den Metriken "precision" und "recall" verwendet wird.
-  """
+"""
+Der Custom Model Checkpoint wird im Training des Multilabel Classifiers für den Pascal VOC Datensatz verwendet.
+Der Code ist eine abgeänderte Variante des Source Codes der Keras Klasse. Er ist dahingehend verändert worden, dass er nun zwei Metriken berücksichtigt.  
+Die Änderungen wurden in der Methode _save_model (ab Zeile 257) vorgenommen und sehen vor, dass der Checkpoint mit den Metriken "precision" und "recall" verwendet wird.
+"""
 
 import collections
 import copy

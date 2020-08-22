@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Fri Jun 12 09:42:09 2020
-
-@author: robin
+In Dieser Datei stellen wir zwei Klassen zur Verfügung, die zum Auswerten der Modell genutzt werden sollen.
+Die Klasse Pascal_Evaluator wertet Modell ausschließlich für den Pascal VOC Datensatz aus.
+Für die Klasse Multiclass_Evaluator können verschiedene Datensätze gewählt werden.
+Für das Trainieren eines neuen Modells oder trainieren mit einem neuen Datensatz muss wie in den gegebenen Beispielen eine Konfiguration hinzugefügt und ausgewählt werden.
+Das Modell und die Auswertung werden automatisch in den zugehörigen Ordner abelegt.
+Modell können durch Angabe des Ordner Pfades in dem die entsprechenden Datein abgelegt sind geladen werden.
 """
 import os
 import pickle
@@ -185,6 +188,9 @@ class Pascal_Evaluator():
     
     
     
+    
+    
+    
 
 class Multiclass_Evaluator():
     
@@ -212,7 +218,8 @@ class Multiclass_Evaluator():
         dt = datetime.now().strftime('%d_%m_%Y-%H-%M')
         config = self.configs[config_nb]
         storage_path = os.path.join(dirname, '..', 'models', config['dataset'], config['model_name'], dt)
-        os.makedirs(storage_path)
+        if not os.path.isdir(storage_path):
+            os.makedirs(storage_path)
         config['storage_path']=storage_path
         
         model_type = config['model_type']
@@ -255,8 +262,8 @@ class Multiclass_Evaluator():
         return classifier
     
     
-    # load_model gibt eine Classifier mit einem trainierten CNN zurück
-    def load_model(self, folderpath):
+    # load_model gibt einen Classifier mit einem trainiertem CNN zurück
+    def load_model(self, folderpath: Path):
         model_dir = Path(folderpath)
         with open(os.path.join(model_dir, 'classifier_config.pickle'), 'rb') as config_file:
             config = pickle.load(config_file)
