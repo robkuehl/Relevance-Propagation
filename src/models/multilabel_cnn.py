@@ -152,16 +152,12 @@ class ml_cnn_classifier:
         # Lades das Bild aus den test_images und predicte mittels Modell
         image = self.test_images[i]
         prediction = self.model.predict(np.asarray([preprocess_input(image)], dtype=np.float64))
-        
+
         # Lade die Korrekten Label des Bildes und gib sie aus
-        correct_labels = [self.classes[j] for j in range(self.test_labels[0].shape[0]) if self.test_labels[i][j]==1]
-        print('Correct Label: {}\n'.format(correct_labels))
-        for i in range(len(self.classes)):
-            print('{}:\t\t {:.2f}'.format(self.classes[i], prediction[0][i]))
-        print('\nNetwork detected:')
+        print('\nKlassifikation durch Netz:')
         for j in range(prediction[0].shape[0]):
             if prediction[0][j] >0.5:
-                print('\t{} with {}%'.format(self.classes[j], prediction[0][j]*100))
+                print('\t{} mit {}%'.format(self.classes[j], prediction[0][j]*100))
         print("\n\n\n")
         return prediction
     

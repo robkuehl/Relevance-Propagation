@@ -159,7 +159,6 @@ class Pascal_Evaluator():
         with open(os.path.join(model_dir, 'classifier_config.pickle'), 'rb') as config_file:
             config = pickle.load(config_file)
         
-        print(config)
         model_name = config['model_name']
         dataset = config['dataset']
         final_activation = config['final_activation']
@@ -173,8 +172,7 @@ class Pascal_Evaluator():
                 model_path = os.path.join(model_dir, file)
             else:
                 continue
-        print(model_path)
-        classifier = ml_cnn_classifier(model_name=model_name, 
+        classifier = ml_cnn_classifier(model_name=model_name,
                                     dataset=dataset, 
                                     final_activation=final_activation, 
                                     loss=loss, 

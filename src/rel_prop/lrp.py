@@ -7,7 +7,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.applications.vgg16 import preprocess_input
 
 from src.plotting.plot_funcs import plot_rel_prop, plot_R_evo
-from src.rel_prop.rel_prop_utils import set_params, preprocess_for_lrp
+from src.rel_prop.lrp_utils import set_params, preprocess_for_lrp
 
 
 def run_rel_prop(classifier: Any, lrp_variants: [str], index: int, eps: float = 0., gamma: float = 0.,
