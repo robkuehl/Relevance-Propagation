@@ -1,6 +1,12 @@
-*.ipynb
-*.json
 *.pickle
-*.h5
 __pycache__
 *pyc
+*.h5
+VOCdevkit
+*.vscode
+*checkpoint.ipynb
+*.7z
+*.gz
+*.txt
+model_history
+*.png
