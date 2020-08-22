@@ -1,2 +1,0 @@
-\beamer@sectionintoc {1}{Einleitung}{1}{0}{1}
-\babel@toc {ngerman}{}

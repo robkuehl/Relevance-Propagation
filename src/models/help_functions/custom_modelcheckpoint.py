@@ -2,6 +2,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+
+  """Der Custom Model Checkpoint wird im Training des Multilabel Classifiers für den Pascal VOC Datensatz verwendet.
+     Der Code ist eine abgeänderte Variante des Source Codes der Keras Klasse. Er ist dahingehend verändert worden, dass er nun zwei Metriken berücksichtigt.  
+     Die Änderungen wurden in der Methode _save_model (ab Zeile 257) vorgenommen und sehen vor, dass der Checkpoint mit den Metriken "precision" und "recall" verwendet wird.
+  """
+
 import collections
 import copy
 import csv
@@ -268,8 +274,12 @@ class ModelCheckpoint(Callback):
           if current is None:
             logging.warning('Can save best model only with {} available, skipping.'.format(self.monitor))
           else:
+            # Beide Metriken haben sich verbessert
             both_improved = self.monitor_op(current[0], self.best[0]) and self.monitor_op(current[1], self.best[1])
+            # eine Metrik hat sicher verbessert während die andere nicht schlechter geworden ist
             one_improved = (self.monitor_op(current[0], self.best[0]) and current[1]==self.best[1]) or (self.monitor_op(current[1], self.best[1]) and current[0]==self.best[0])
+            # Die Metriken haben sich im Mittel verbessert und haben sich in ihren Werten einander genähert
+            # Bsp: (0.8, 0.8) entspricht einer wesentlich besseren Klassifikation als (0.1, 0.9)
             mean_improved = sum(current)/2 > sum(self.best)/2 and abs(current[0]-current[1]) <= abs(self.best[0]-self.best[1])
             
             if both_improved or one_improved or mean_improved:
