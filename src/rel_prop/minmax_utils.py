@@ -14,12 +14,11 @@ import pickle
 # Anschließend werden die Daten in .npy Dateien gespeichert und beim nächsten Aufruf der Funktion automatisch geladen
 
 
-def get_higher_relevances(classifier:Montavon_Classifier, recalc_rel:bool, use_higher_rel:bool):
+def get_higher_relevances(classifier:Montavon_Classifier, recalc_rel:bool):
     """Berechnen der Relevances aus dem 2. und 3. Dense Layer des Monatvon Classifiers
     Args:
         classifier (Montavon_Classifier): Objekt der Klasse Monatvon Classifier mit gefittetem Modell
         recalc_rel (bool): Falls True werden die Relevances neu berechnet und neu abgespeichert (auch wenn sie lokal als Datei verfügbar sind)
-        use_higher_rel (bool): Wir müssen die higher_relevances (3. Dense Layer) nur dann nutzen, wenn wir sie im Bias des Relevance Models nutzen
 
     Returns:
         true_relevances (numpy array): Relevances des 2. Dense Layers. Pro Neuron ein Zeilenvektor -> Numpy-Matrix mit shape (100 x #Bilder)
@@ -27,11 +26,8 @@ def get_higher_relevances(classifier:Montavon_Classifier, recalc_rel:bool, use_h
         nr_train_images (numpy array): Bilder mit label 1 für die der Montavon Classifier eine korrekte prediction macht. Diese werden für das Training der Regressor Modelle verwnedet
     """
     
+    
     print("Started to collect relevances to train min-max-model!")
-    if use_higher_rel:
-        print("Info: You decided to use higher relevances for training.")
-    else:
-        print("Info: You decided not to use higher relevances for training.")
     dirname = os.path.dirname(__file__)
     # Falls nicht existent, erstelle alle notwendigen Ordner
     storage_path = pathjoin(dirname, "..", "..", "data", "min_max_relevances")
@@ -93,8 +89,5 @@ def get_higher_relevances(classifier:Montavon_Classifier, recalc_rel:bool, use_h
         with open(pathjoin(storage_path, "nr_train_images.npy"), "wb") as file:
             np.save(file, nr_train_images)
             
-    
-    if use_higher_rel:       
+       
         return true_relevances, higher_relevances, nr_train_images
-    else:
-        return true_relevances, None, nr_train_images

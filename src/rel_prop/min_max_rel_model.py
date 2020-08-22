@@ -68,6 +68,8 @@ class Nested_Regressor():
         x2 = flat_bias(bias_input)
         
         dense_bias = Dense(100, activation=self.custom_activation, name="dense_bias")
+        if self.use_bias==False:
+            dense_bias.use_bias=False
         x2 = dense_bias(x2)
         
         merge = concatenate([x1, x2])
@@ -91,7 +93,7 @@ class Nested_Regressor():
                 model.layers[i].set_weights([w_matrix]) 
 
         model.compile(
-            optimizer=Adam(learning_rate=0.00001),
+            optimizer=SGD(learning_rate=0.0000001),
             loss='mse',
             metrics=['mse']
         )
@@ -123,7 +125,7 @@ class MinMaxModel:
         # Addieren der Relevances für den Input über alle nested_regressor
         """
     
-    def __init__(self, classifier:Montavon_Classifier, use_higher_rel=False):
+    def __init__(self, classifier:Montavon_Classifier, use_higher_rel=True):
         """Übergeordnete Klasse für das Min-Max-Modell.
            Hier führen wir den Hautpteil der Berechnug durch die definierten Methode und Klassen zusammen.
         Args:
@@ -134,7 +136,9 @@ class MinMaxModel:
         self.classifier = classifier
         self.nested_regressors = []
         self.train_images = classifier.train_images
-        self.true_relevances, self.higher_relevances, self.nr_train_images = get_higher_relevances(classifier, recalc_rel=False, use_higher_rel=use_higher_rel)
+        self.true_relevances, self.higher_relevances, self.nr_train_images = get_higher_relevances(classifier, recalc_rel=False)
+        if use_higher_rel == False:
+            self.higher_relevances = np.zeros(shape=self.higher_relevances)
         print('Created MinMaxModel')
     
     def train_min_max(self, pretrained:bool):
