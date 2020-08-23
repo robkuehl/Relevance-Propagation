@@ -63,7 +63,7 @@ def get_higher_relevances(classifier:Montavon_Classifier, recalc_rel:bool):
             #if pred == 1:
                 pos_classified_indices.append(index)
                 relevances = run_rel_prop(model = classifier.model,
-                                            test_images = classifier.test_images,
+                                            test_images = classifier.train_images,
                                             index=index
                                         )
                 r_true = np.asarray(relevances[-3]).reshape(-1,1)
@@ -73,6 +73,7 @@ def get_higher_relevances(classifier:Montavon_Classifier, recalc_rel:bool):
         
         # Wenn LRP für alle Bilder abgeschlossen ist, konvertiere die Listen in Numpy-Matrizen
         higher_relevances = np.column_stack(higher_relevances)
+        higher_relevances = np.transpose(higher_relevances)
         true_relevances = np.column_stack(true_relevances)
         nr_train_images = np.asarray([classifier.train_images[index] for index in pos_classified_indices])
         

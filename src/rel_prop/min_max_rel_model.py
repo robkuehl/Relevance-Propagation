@@ -96,7 +96,7 @@ class Nested_Regressor():
                 model.layers[i].set_weights([w_matrix]) 
 
         model.compile(
-            optimizer=SGD(learning_rate=0.0000001),
+            optimizer=SGD(learning_rate=0.0001),
             loss='mse',
             metrics=['mse']
         )
@@ -106,11 +106,11 @@ class Nested_Regressor():
         # plot_model(model, to_file=pathjoin(filepath, "..", "..", "functional_model.png"))
         
     def fit_approx_model(self, train_images, true_relevances, higher_relevances):
-        higher_relevances = np.transpose(higher_relevances)
+        higher_relevances = higher_relevances
         early_stopping = EarlyStopping(monitor='val_loss', patience=50, verbose=2)
-        checkpoint = ModelCheckpoint(filepath=pathjoin(self.storage_path, "nested_regressor_{}.h5".format(self.neuron_index)))
+        checkpoint = ModelCheckpoint(monitor='val_loss', filepath=pathjoin(self.storage_path, "nested_regressor_{}.h5".format(self.neuron_index)))
         print('Fit model of nested regressor with neuron index {}'.format(self.neuron_index))
-        history = self.model.fit(x=[train_images, higher_relevances], y=true_relevances, batch_size=32, epochs=300, validation_split=0.2, callbacks=[checkpoint, early_stopping], verbose=0)
+        history = self.model.fit(x=[train_images, higher_relevances], y=true_relevances, batch_size=32, epochs=300, validation_split=0.2, callbacks=[checkpoint, early_stopping], verbose=2)
         return history
     
     def save_model(self):
@@ -165,7 +165,7 @@ class MinMaxModel:
             
         for nr in self.nested_regressors:
             if pretrained==False:
-                nr.fit_approx_model(train_images=self.nr_train_images, true_relevances=self.true_relevances[nr.neuron_index], higher_relevances=np.array([self.higher_relevances]))
+                nr.fit_approx_model(train_images=self.nr_train_images, true_relevances=self.true_relevances[nr.neuron_index], higher_relevances=self.higher_relevances)
                 #nr.save_model()
             else:
                 try:
@@ -189,13 +189,13 @@ class MinMaxModel:
         
         # Führe Relevance Propagation nur dann aus, wenn das Bild label=1 hat und richtig erkannt wurde
         if pred ==1 and self.classifier.test_labels[index]==1:
-            # TODO: Parallelisieren
             z_plus_relevances = run_rel_prop(
                                             model = self.classifier.model,
                                             test_images = self.classifier.test_images,
                                             index=index,
-                                            )[-3]
-            z_plus_relevances = np.asarray(z_plus_relevances[0])
+                                            )
+            z_plus = np.asarray(z_plus_relevances[0][0])
+            z_plus_relevances = np.asarray(z_plus_relevances[-3][0])
             
             # Kombinieren von z+ für tiefe Schichten mit RelProp für Aprroximationsmodelle
             # Für jedes Approximationsmodell (Nested Regressor) führe Relevance Propagation aus, wobei der Output/die zu verteilenden Relevance gegeben ist
@@ -203,7 +203,6 @@ class MinMaxModel:
             # Der Forward Pass im Nested Regressor liefert lediglich die Regeln zur Umverteilung.
             for nr in self.nested_regressors:
                 print('Starte Relevance Propagation für Nested Regressor mit Neuron Index {}'.format(nr.neuron_index))
-                # TODO: Parallelisieren
                 if not z_plus_relevances[nr.neuron_index] > 0:
                     continue
                 relevance = run_rel_prop(
@@ -216,7 +215,7 @@ class MinMaxModel:
                 relevances.append(np.reshape(relevance[0], (28, 28)))
             
             final_relevance = sum(relevances)
-            return final_relevance, z_plus_relevances
+            return final_relevance, z_plus
         else:
             print("Model makes wrong prediction for the test image with index {}! No Relevance propagation possible!".format(index))
             return 404
