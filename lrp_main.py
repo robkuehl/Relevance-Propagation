@@ -22,8 +22,7 @@ n_labels = 1
 
 # Model und Daten werden geladen
 p_e = Pascal_Evaluator()
-# TODO: Pfad anpassen, sodass das mit der Readme übereinstimmt
-classifier = p_e.load_model('alle_Klassen_ohne_BatchNorm')
+classifier = p_e.load_model('VGG16_refined')
 
 index = get_index(classifier=classifier, multilabel=multilabel, n_labels=n_labels)
 
