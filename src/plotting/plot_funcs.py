@@ -5,8 +5,10 @@ import plotly.express as px
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from os.path import join as pathjoin
 
 from src.plotting.help_func import MidpointNormalize, OOMFormatter, get_scientific_order
+import seaborn as sns
 
 
 def plotly_mnist_image(image):
@@ -94,3 +96,25 @@ def plot_R_evo(evolutions_of_R: tuple, persist_string: str, show: bool, y_min: i
     else:
         plt.legend()
         plt.show()
+
+
+def plot_min_max_results(image, mm_rel, z_plus_rel, dirname, idx):
+    image_plot = sns.heatmap(image, cmap="cividis")
+    fig = image_plot.get_figure()
+    fig.savefig(pathjoin(dirname, "minmax_results", "image_"+str(idx)+".png"))
+        
+        
+    plt.cla()
+    plt.clf()
+            
+    mm_plot = sns.heatmap(mm_rel.reshape((28,28)), cmap="cividis")
+    fig = mm_plot.get_figure()
+    fig.savefig(pathjoin(dirname, "minmax_results", "mm_plot_"+str(idx)+".png"))
+
+    plt.cla()
+    plt.clf()
+            
+    z_plus_plot = sns.heatmap(z_plus_rel.reshape((28,28)), cmap="cividis")
+    fig = z_plus_plot.get_figure()
+    fig.savefig(pathjoin(dirname, "minmax_results", "z_plus_plot_"+str(idx)+".png"))
+    

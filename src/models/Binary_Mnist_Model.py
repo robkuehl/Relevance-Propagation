@@ -8,6 +8,7 @@ from tensorflow.keras.optimizers import SGD
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 import os
 from os.path import join as pathjoin
+from datetime import datetime
 
 dirname = filepath = os.path.dirname(__file__)
 storage_path = pathjoin(dirname, '..','..','models', 'minmax')
@@ -79,7 +80,7 @@ class Montavon_Classifier:
         
         self.model = model
         self.model.compile(loss='binary_crossentropy',
-                        optimizer=Adam(learning_rate = 0.00001),
+                        optimizer=Adam(learning_rate = 0.0001),
                         metrics=['acc'])
        
         self.model.summary()
@@ -116,8 +117,8 @@ class Montavon_Classifier:
         if(self.load_model and os.path.isdir(self.storage_path)):
             print("Model has been load, no need to train!")
             return
-        early_stopping = EarlyStopping(monitor='val_accuracy', patience=25, verbose=2)
-        checkpoint = ModelCheckpoint(filepath=pathjoin(self.storage_path, 'model.h5'), verbose=2, safe_best_only=True)
+        early = EarlyStopping(monitor='val_acc', patience=25, verbose=2)
+        checkpoint = ModelCheckpoint(monitor='val_acc', filepath=pathjoin(self.storage_path, 'model.h5'), verbose=2, safe_best_only=True)
         self.model.fit(
             self.train_images,
             self.train_labels,
@@ -125,7 +126,7 @@ class Montavon_Classifier:
             batch_size=batch_size,
             validation_split=0.2,
             verbose=2,
-            callbacks=[checkpoint]
+            callbacks=[checkpoint, early]
         )
 
     def predict_train_image(self, index:int):
