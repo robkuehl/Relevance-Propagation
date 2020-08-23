@@ -30,14 +30,13 @@ if tf.device('/device:cpu:0'):
     minmax.train_min_max(pretrained=True)
 
 # Suche nach einem Bild für das Relevance Propagation durchführbar ist und führe sie mit MinMax und z+ aus. Die Ergebnisse werden im Ordner minmax_results gespeichert
-for i in range(5):
+nb_images = 5
+for i in range(nb_images):
     while True:
         idx = random.randint(0, mc.test_images.shape[0])
         if mc.predict_test_image(idx) == 1 and mc.test_labels[idx] == 1:
             final_relevance, z_plus = minmax.min_max_rel_prop(idx)
             plot_min_max_results(mc.test_images[idx], final_relevance, z_plus, dirname, idx)
             break
-    
-    
     
 

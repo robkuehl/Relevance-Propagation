@@ -1,9 +1,6 @@
-To run the code:    - add the src folder to pythonpath
-                    - you may use the jupyter notebook 'main'
-
 Beschreibung der Projektstruktur:
 
-├── README.md          <- The top-level README for developers using this project.
+├── README.md          <- The top-level README on how to this project.
 ├── data
 │   ├── processed      <- Data for training of models (e.g. rehsaped pascal)
 │   └── raw            <- The original, immutable data dump.
@@ -35,3 +32,21 @@ Beschreibung der Projektstruktur:
 ├── minmax_results      <- Ordner in der Bilder gespeichert werden, die mit minmax_main.py generiert werden
 │
 └── gitignore-file
+
+
+
+
+Anwendung Min-Max-Model
+Das Min-Max Modell kann auschließlich für den Montavon Classifier auf dem MNIST Datensatz verwendet werden.
+Die higher relevacnes (Input für Bias Term) und die trainierten Hilfsmodelle werden automatisch geladen, sofern sie bereits vorhanden sind.
+Mit nb_images kann die gewünschte Anzahl zu erzeugender Bilder gewählt werden.
+
+
+
+Anwendung LRP
+1. Wahl der Parameter in lrp_main.py
+	- lrp_variants: Ein Array, das die Namen der gewünschten LRP-Regeln enthalten soll
+	- multilabel: Boolean, der angibt, ob ein Bild mit mehreren Labeln gewählt werden soll
+	- n_labels: Anzahl der vorhandenen Labeln im Bild
+
+2. lrp_main.py ausführen

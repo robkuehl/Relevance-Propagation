@@ -99,6 +99,9 @@ def plot_R_evo(evolutions_of_R: tuple, persist_string: str, show: bool, y_min: i
 
 
 def plot_min_max_results(image, mm_rel, z_plus_rel, dirname, idx):
+    plt.cla()
+    plt.clf()
+    
     image_plot = sns.heatmap(image, cmap="cividis")
     fig = image_plot.get_figure()
     fig.savefig(pathjoin(dirname, "minmax_results", "image_"+str(idx)+".png"))
