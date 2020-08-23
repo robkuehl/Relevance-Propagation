@@ -18,7 +18,6 @@ def plotly_mnist_image(image):
 
 def plot_rel_prop(image: np.ndarray, correct_label: str, relevances: Tuple, persist_string: str, show: bool = False):
     num_pics = len(relevances)
-    n_col = int((num_pics + 1)/2 + 0.5) +1
 
     plt.suptitle(f'Erklärung für die Klassifizierung: {correct_label}')
 
@@ -28,13 +27,9 @@ def plot_rel_prop(image: np.ndarray, correct_label: str, relevances: Tuple, pers
     fig.axes.get_xaxis().set_visible(False)
     fig.axes.get_yaxis().set_visible(False)
 
-    # vals = np.array([val[1] for val in relevances])
-    # rel_max = vals.max()
-    # rel_min = vals.min()
-
     for i in range(0, num_pics):
-        plt.subplot(1, 7, i+1)
-        plt.title(relevances[i][0], fontsize=12)
+        plt.subplot(1, 7, i+2)
+        plt.title(relevances[i][0] + '\n', fontsize=12)
         relevance = relevances[i][1][0]
         ax = plt.gca()
         fig = ax.imshow(relevance, cmap='seismic',
@@ -58,13 +53,7 @@ def plot_rel_prop(image: np.ndarray, correct_label: str, relevances: Tuple, pers
             top=False,  # ticks along the top edge are off
             labelbottom=False)  # labels along the bottom edge are off
 
-        # if i+2 > n_col:
-        #     plt.xlabel(relevances[i][0], fontsize=12)
-        # else:
-            # plt.title(relevances[i][0], fontsize=12)
-
         fig.axes.get_yaxis().set_visible(False)
-        # fig.axes.get_xaxis().set_visible(False)
 
     if not show:
         fig_path = os.path.join(os.path.dirname(__file__), '..', '..', 'figures', persist_string)
@@ -85,7 +74,6 @@ def plot_R_evo(evolutions_of_R: tuple, persist_string: str, show: bool, y_min: i
     plt.suptitle(f'Relative Entwicklung der Summe über alle Relevanzwerte')
     plt.gca().invert_xaxis()
     for i in range(0, num_pics):
-        # plt.subplot(2, n_col, i+1)
         sum_over_R = evolutions_of_R[i][1]
         if i < num_pics-1:
             label = evolutions_of_R[i][0] + '\n'
@@ -106,4 +94,3 @@ def plot_R_evo(evolutions_of_R: tuple, persist_string: str, show: bool, y_min: i
     else:
         plt.legend()
         plt.show()
-
